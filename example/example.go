@@ -11,12 +11,12 @@ type Example struct {
 }
 
 func NewExample(ctx context.Context) *Example {
-	db, err := sutando.New(ctx, sutando.Connection{
+	db, err := sutando.NewDB(ctx, sutando.Conn{
 		Username:  "test",
 		Password:  "test",
 		Host:      "localhost",
 		Port:      27017,
-		Database:  "Sutando",
+		DB:        "Sutando",
 		AdminAuth: true,
 		Pem:       "",
 	})

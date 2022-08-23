@@ -23,7 +23,8 @@ type DB struct {
 	db     string
 }
 
-func New(ctx context.Context, s Connection) (*DB, error) {
+/* sutando provide default connection implement 'Conn' */
+func NewDB(ctx context.Context, c Connection) (*DB, error) {
 	cfg := &tls.Config{
 		RootCAs: x509.NewCertPool(),
 	}
@@ -31,26 +32,7 @@ func New(ctx context.Context, s Connection) (*DB, error) {
 		opts *options.ClientOptions
 		err  error
 	)
-
-	suffix := ""
-	prefix := fmt.Sprintf("mongodb://%s:%s@%s:%d/%s",
-		s.Username,
-		s.Password,
-		s.Host,
-		s.Port,
-		s.Database,
-	)
-
-	if s.AdminAuth {
-		suffix = "?authSource=admin"
-	}
-
-	var pem bool
-	if pem = cfg.RootCAs.AppendCertsFromPEM([]byte(s.Pem)); pem {
-		suffix = "?ssl=true&replicaSet=rs0&readpreference=secondaryPreferred"
-	}
-
-	dsn := prefix + suffix
+	dsn, pem := c.DSN(cfg)
 
 	opts = options.Client().ApplyURI(dsn).
 		SetRegistry((*bsoncodec.Registry)(bson.NewRegistryBuilder().
@@ -76,9 +58,12 @@ func New(ctx context.Context, s Connection) (*DB, error) {
 		return nil, fmt.Errorf("db.Ping, %w", err)
 	}
 
-	return &DB{client, s.Database}, nil
+	return &DB{client, c.Database()}, nil
 }
 
+/*
+The collection you want to operate.
+*/
 func (s *DB) Collection(name string, opts ...*options.CollectionOptions) builder {
 	return builder{col: s.client.Database(s.db).Collection(name, opts...)}
 }

@@ -17,12 +17,12 @@ type dbSuite struct {
 
 func (su *dbSuite) SetupSuite() {
 	ctx := context.Background()
-	s, err := New(ctx, Connection{
+	s, err := NewDB(ctx, Conn{
 		Username:  "test",
 		Password:  "test",
 		Host:      "localhost",
 		Port:      27017,
-		Database:  "Sutando",
+		DB:        "Sutando",
 		AdminAuth: true,
 		Pem:       "",
 	})
