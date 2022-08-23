@@ -19,7 +19,7 @@ func (e *Example) InsertOne(ctx context.Context, obj ExampleInsertStruct) error 
 		return err
 	}
 
-	insertWithKey := e.Collection("CollectionName").Insert(&obj).WithKeys("MyObject")
+	insertWithKey := e.Collection("CollectionName").Insert(&obj)
 	_, _, err = e.ExecInsert(ctx, insertWithKey)
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func (e *Example) InsertMany(ctx context.Context, objs []ExampleInsertStruct) er
 		return err
 	}
 
-	insertWithKey := e.Collection("CollectionName").Insert(&objs).WithKeys("MyObject")
+	insertWithKey := e.Collection("CollectionName").Insert(&objs)
 	_, _, err = e.ExecInsert(ctx, insertWithKey)
 	if err != nil {
 		return err

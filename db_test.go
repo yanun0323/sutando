@@ -81,7 +81,6 @@ func (su dbSuite) Test_ExecQueryOne_Equal_Good() {
 }
 
 func (su dbSuite) Test_ExecQueryMany() {
-
 	query := su.db.Collection("TestMany").Find().Contain("arr", 1, 3, 5)
 	var a []testStruct
 	err := su.db.ExecQuery(su.Ctx, query, &a)
