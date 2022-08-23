@@ -2,7 +2,8 @@ package example
 
 import (
 	"context"
-	"sutando"
+
+	"github.com/yanun0323/sutando"
 )
 
 type Example struct {

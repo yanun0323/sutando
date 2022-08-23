@@ -1,4 +1,4 @@
-module sutando
+module github.com/yanun0323/sutando
 
 go 1.18
 
