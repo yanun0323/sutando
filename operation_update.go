@@ -1,7 +1,6 @@
 package sutando
 
 import (
-	"fmt"
 	"reflect"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,15 +10,14 @@ import (
 type update struct {
 	col     *mongo.Collection
 	filters []filter
-	keys    []string
-	data    []bson.M
-	id      uint64
+	// keys    []string
+	data []bson.M
+	id   uint64
 }
 
 func newUpdate(collection *mongo.Collection, p ...any) *update {
 	d := make([]bson.M, 0, len(p))
 	for i := range p {
-		fmt.Println(reflect.TypeOf(p[i]).Kind())
 		if reflect.TypeOf(p[i]).Kind() != reflect.Pointer {
 			continue
 		}
@@ -28,8 +26,8 @@ func newUpdate(collection *mongo.Collection, p ...any) *update {
 	return &update{
 		col:     collection,
 		filters: []filter{},
-		keys:    nil,
-		data:    d,
+		// keys:    nil,
+		data: d,
 	}
 }
 
@@ -48,23 +46,23 @@ func (u *update) buildQueryOrID() bson.D {
 func (u *update) buildObjects() []any {
 	result := make([]any, 0, len(u.data))
 	for i := range u.data {
-		result = append(result, u.valueWrapper(u.data[i], i))
+		result = append(result, u.data[i])
 	}
 	return result
 }
 
-func (u *update) valueWrapper(v any, index int) any {
-	if len(u.keys) == 0 || index >= len(u.keys) {
-		return v
-	}
+// func (u *update) valueWrapper(v any, index int) any {
+// 	if len(u.keys) == 0 || index >= len(u.keys) {
+// 		return v
+// 	}
 
-	return bson.M{u.keys[index]: v}
-}
+// 	return bson.M{u.keys[index]: v}
+// }
 
-func (u *update) WithKeys(keys ...string) *update {
-	u.keys = keys
-	return u
-}
+// func (u *update) WithKeys(keys ...string) *update {
+// 	u.keys = keys
+// 	return u
+// }
 
 func (u *update) ID(id uint64) *update {
 	if len(u.data) == 1 {

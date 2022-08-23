@@ -41,11 +41,18 @@ func (su dbSuite) Test_ExecInsertOne() {
 
 	ins := su.db.Collection("TestOne").Insert(&data)
 	result, n, err := su.db.ExecInsert(su.Ctx, ins)
+	su.Assert().Nil(n)
+	su.Assert().Nil(err)
+	su.Assert().NotNil(result)
 
+	data.Name = "NotYanun"
+	ins = su.db.Collection("TestOne").Insert(&data)
+	result, n, err = su.db.ExecInsert(su.Ctx, ins)
 	su.Assert().Nil(n)
 	su.Assert().Nil(err)
 	su.Assert().NotNil(result)
 }
+
 func (su dbSuite) Test_ExecInsertMany() {
 	data := mockData()
 
@@ -56,8 +63,17 @@ func (su dbSuite) Test_ExecInsertMany() {
 	su.Assert().Nil(err)
 	su.Assert().NotNil(result)
 }
-func (su dbSuite) Test_ExecQueryOne() {
-	query := su.db.Collection("TestOne").Find().Equal("nameName", "Yanun")
+
+func (su dbSuite) Test_ExecQueryOne_None_Good() {
+	query := su.db.Collection("TestOne").Find()
+	var a testStruct
+	err := su.db.ExecQuery(su.Ctx, query, &a)
+	su.Nil(err)
+	fmt.Printf("%+v\n", a)
+}
+
+func (su dbSuite) Test_ExecQueryOne_Equal_Good() {
+	query := su.db.Collection("TestOne").Find().Equal("nameName", "NotYanun")
 	var a testStruct
 	err := su.db.ExecQuery(su.Ctx, query, &a)
 	su.True(err == nil || errors.Is(err, ErrNoDocument), err)
@@ -73,7 +89,7 @@ func (su dbSuite) Test_ExecQueryMany() {
 	fmt.Printf("%+v\n", a)
 }
 
-func (su dbSuite) Test_UpdateOne() {
+func (su dbSuite) Test_UpdateOne_Equal_Good() {
 	data := mockData()
 	data.Name = "Vin"
 	update := su.db.Collection("TestMany").Update(&data).Equal("nameName", "Yanun")

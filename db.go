@@ -103,8 +103,8 @@ func (s *sutandoDB) ExecQuery(ctx context.Context, q *query, p any) error {
 		return errors.New("object to find should be a pointer")
 	}
 	kind := reflect.TypeOf(p).Elem().Kind()
-	if kind == reflect.Array || kind == reflect.Map {
-		return errors.New("object to find cannot be an array or a map")
+	if kind == reflect.Array {
+		return errors.New("object to find cannot be an array")
 	}
 	if kind == reflect.Slice {
 		return execQueryMany(ctx, q, p)
@@ -135,7 +135,6 @@ func execQueryMany(ctx context.Context, q *query, p any) error {
 }
 
 func (s *sutandoDB) ExecUpdate(ctx context.Context, u *update, upsert bool) (updateResult, error) {
-	fmt.Println(u.buildObjects())
 	switch len(u.data) {
 	case 0:
 		return nil, errors.New("object to insert should be pointer")

@@ -20,13 +20,6 @@ func (e *Example) QueryOne(ctx context.Context) (ExampleQueryStruct, error) {
 	if err := e.ExecQuery(ctx, query, &result); err != nil {
 		return ExampleQueryStruct{}, err
 	}
-
-	queryWithKey := e.Collection("CollectionName").Find().
-		Equal("user_name", "Yanun").
-		Greater("amount", decimal.RequireFromString("300")).WithKey("KeyName")
-	if err := e.ExecQuery(ctx, queryWithKey, &result); err != nil {
-		return ExampleQueryStruct{}, err
-	}
 	return result, nil
 }
 
@@ -36,13 +29,6 @@ func (e *Example) QueryMany(ctx context.Context) ([]ExampleQueryStruct, error) {
 		Equal("user_name", "Yanun").
 		Greater("amount", decimal.RequireFromString("300"))
 	if err := e.ExecQuery(ctx, query, &result); err != nil {
-		return nil, err
-	}
-
-	queryWithKey := e.Collection("CollectionName").Find().
-		Equal("user_name", "Yanun").
-		Greater("amount", decimal.RequireFromString("300")).WithKey("KeyName")
-	if err := e.ExecQuery(ctx, queryWithKey, &result); err != nil {
 		return nil, err
 	}
 	return result, nil

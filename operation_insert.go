@@ -9,8 +9,8 @@ import (
 )
 
 type insert struct {
-	col  *mongo.Collection
-	keys []string
+	col *mongo.Collection
+	// keys []string
 	data []bson.M
 }
 
@@ -23,32 +23,32 @@ func newInsert(collection *mongo.Collection, p ...any) *insert {
 		d = append(d, bsonEncoder(p[i], reflect.TypeOf(p).Name(), false))
 	}
 	return &insert{
-		col:  collection,
-		keys: nil,
+		col: collection,
+		// keys: nil,
 		data: d,
 	}
 }
 
-func (ins *insert) WithKeys(keys ...string) *insert {
-	ins.keys = keys
-	return ins
-}
+// func (ins *insert) WithKeys(keys ...string) *insert {
+// 	ins.keys = keys
+// 	return ins
+// }
 
 func (ins *insert) build() []any {
 	result := make([]any, 0, len(ins.data))
 	for i := range ins.data {
-		result = append(result, ins.valueWrapper(ins.data[i], i))
+		result = append(result, ins.data[i])
 	}
 	return result
 }
 
-func (ins *insert) valueWrapper(v any, index int) any {
-	if len(ins.keys) == 0 || index >= len(ins.keys) {
-		return v
-	}
+// func (ins *insert) valueWrapper(v any, index int) any {
+// 	if len(ins.keys) == 0 || index >= len(ins.keys) {
+// 		return v
+// 	}
 
-	return bson.M{ins.keys[index]: v}
-}
+// 	return bson.M{ins.keys[index]: v}
+// }
 
 func (ins *insert) optionOne() []*options.InsertOneOptions {
 	// TODO: [Yanun] ?

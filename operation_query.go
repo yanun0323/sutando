@@ -6,15 +6,15 @@ import (
 )
 
 type query struct {
-	col     *mongo.Collection
-	key     string
+	col *mongo.Collection
+	// key     string
 	filters []filter
 }
 
 func newQuery(collection *mongo.Collection) *query {
 	return &query{
-		col:     collection,
-		key:     "",
+		col: collection,
+		// key:     "",
 		filters: []filter{}}
 }
 
@@ -27,10 +27,10 @@ func (q *query) build() bson.D {
 	return query
 }
 
-func (q *query) WithKey(key string) *query {
-	q.key = key
-	return q.Exists(key, true)
-}
+// func (q *query) WithKey(key string) *query {
+// 	q.key = key
+// 	return q.Exists(key, true)
+// }
 
 func (q *query) Exists(key string, exists bool) *query {
 	return q.appendFilters("$exists", key, exists)
