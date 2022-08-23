@@ -14,9 +14,9 @@ type Conn struct {
 	Username  string
 	Password  string
 	Host      string
-	Port      uint
+	Port      uint /* keep empty if you already add port in host */
 	DB        string
-	Pem       string
+	Pem       string /* optional */
 	AdminAuth bool
 }
 

@@ -18,13 +18,20 @@ var (
 	ErrNoDocument = mongo.ErrNoDocuments
 )
 
-type DB struct {
+type DB interface {
+	Collection(name string, opts ...*options.CollectionOptions) builder
+	ExecInsert(ctx context.Context, i *insert) (insertOneResult, insertManyResult, error)
+	ExecQuery(ctx context.Context, q *query, p any) error
+	ExecUpdate(ctx context.Context, u *update, upsert bool) (updateResult, error)
+}
+
+type sutandoDB struct {
 	client *mongo.Client
 	db     string
 }
 
 /* sutando provide default connection implement 'Conn' */
-func NewDB(ctx context.Context, c Connection) (*DB, error) {
+func NewDB(ctx context.Context, c Connection) (DB, error) {
 	cfg := &tls.Config{
 		RootCAs: x509.NewCertPool(),
 	}
@@ -58,13 +65,13 @@ func NewDB(ctx context.Context, c Connection) (*DB, error) {
 		return nil, fmt.Errorf("db.Ping, %w", err)
 	}
 
-	return &DB{client, c.Database()}, nil
+	return &sutandoDB{client, c.Database()}, nil
 }
 
 /*
 The collection you want to operate.
 */
-func (s *DB) Collection(name string, opts ...*options.CollectionOptions) builder {
+func (s *sutandoDB) Collection(name string, opts ...*options.CollectionOptions) builder {
 	return builder{col: s.client.Database(s.db).Collection(name, opts...)}
 }
 
@@ -72,7 +79,7 @@ type insertOneResult *mongo.InsertOneResult
 type insertManyResult *mongo.InsertManyResult
 type updateResult *mongo.UpdateResult
 
-func (s *DB) ExecInsert(ctx context.Context, i *insert) (insertOneResult, insertManyResult, error) {
+func (s *sutandoDB) ExecInsert(ctx context.Context, i *insert) (insertOneResult, insertManyResult, error) {
 	var (
 		err  error
 		one  insertOneResult
@@ -91,7 +98,7 @@ func (s *DB) ExecInsert(ctx context.Context, i *insert) (insertOneResult, insert
 	}
 }
 
-func (s *DB) ExecQuery(ctx context.Context, q *query, p any) error {
+func (s *sutandoDB) ExecQuery(ctx context.Context, q *query, p any) error {
 	if reflect.TypeOf(p).Kind() != reflect.Pointer {
 		return errors.New("object to find should be a pointer")
 	}
@@ -127,7 +134,7 @@ func execQueryMany(ctx context.Context, q *query, p any) error {
 	return nil
 }
 
-func (s *DB) ExecUpdate(ctx context.Context, u *update, upsert bool) (updateResult, error) {
+func (s *sutandoDB) ExecUpdate(ctx context.Context, u *update, upsert bool) (updateResult, error) {
 	fmt.Println(u.buildObjects())
 	switch len(u.data) {
 	case 0:

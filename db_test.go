@@ -11,7 +11,7 @@ import (
 
 type dbSuite struct {
 	suite.Suite
-	db  *DB
+	db  DB
 	Ctx context.Context
 }
 

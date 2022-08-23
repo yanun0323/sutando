@@ -7,7 +7,7 @@ import (
 )
 
 type Example struct {
-	*sutando.DB
+	sutando.DB
 }
 
 func NewExample(ctx context.Context) *Example {
