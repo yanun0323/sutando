@@ -14,6 +14,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type insertOneResult *mongo.InsertOneResult
+type insertManyResult *mongo.InsertManyResult
+type updateResult *mongo.UpdateResult
+
 var (
 	ErrNoDocument = mongo.ErrNoDocuments
 )
@@ -74,10 +78,6 @@ The collection you want to operate.
 func (s *sutandoDB) Collection(name string, opts ...*options.CollectionOptions) builder {
 	return builder{col: s.client.Database(s.db).Collection(name, opts...)}
 }
-
-type insertOneResult *mongo.InsertOneResult
-type insertManyResult *mongo.InsertManyResult
-type updateResult *mongo.UpdateResult
 
 func (s *sutandoDB) ExecInsert(ctx context.Context, i *insert) (insertOneResult, insertManyResult, error) {
 	var (

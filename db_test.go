@@ -22,7 +22,7 @@ func (su *dbSuite) SetupSuite() {
 		Password:  "test",
 		Host:      "localhost",
 		Port:      27017,
-		DB:        "Sutando",
+		DB:        "sutando",
 		AdminAuth: true,
 		Pem:       "",
 	})
