@@ -45,7 +45,7 @@ func (su dbSuite) Test_ExecInsertOne() {
 	su.Assert().Nil(err)
 	su.Assert().NotNil(result)
 
-	data.Name = "NotYanun"
+	data.StructName = "NotYanun"
 	ins = su.db.Collection("TestOne").Insert(&data)
 	result, n, err = su.db.ExecInsert(su.Ctx, ins)
 	su.Assert().Nil(n)
@@ -90,7 +90,7 @@ func (su dbSuite) Test_ExecQueryMany() {
 
 func (su dbSuite) Test_UpdateOne_Equal_Good() {
 	data := mockData()
-	data.Name = "Vin"
+	data.StructName = "Vin"
 	update := su.db.Collection("TestMany").Update(&data).Equal("nameName", "Yanun")
 	result, err := su.db.ExecUpdate(su.Ctx, update, false)
 	su.True(err == nil || errors.Is(err, ErrNoDocument), err)

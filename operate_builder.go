@@ -19,3 +19,7 @@ func (b builder) Update(p ...any) *update {
 func (b builder) Find() *query {
 	return newQuery(b.col)
 }
+
+func (b builder) Delete(p ...any) *delete {
+	return newDelete(b.col, p...)
+}
