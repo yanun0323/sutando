@@ -34,7 +34,35 @@ type sutandoDB struct {
 	db     string
 }
 
-/* sutando provide default connection implement 'Conn' */
+/*
+Create a new connection to MongoDB
+
+	# Sample Code:
+		db, err := sutando.NewDB(ctx, sutando.Conn{
+			Username:  "example",
+			Password:  "example",
+			Host:      "localhost",
+			Port:      27017,	// leave empty if there's port in host
+			DB:        "example",
+			AdminAuth: true,
+			Pem:       "",		// optional
+		})
+
+	# --- How To Use ---
+
+	# Find:
+		result := struct{}
+		query := e.Collection("CollectionName").Find().Equal("field_a", "sutando").Greater("field_b", 300)
+
+		err := e.ExecQuery(ctx, query, &result)
+
+	# Insert
+		insert := e.Collection("CollectionName").Insert(&obj)
+		_, _, err := e.ExecInsert(ctx, insert)
+
+		insertMany := e.Collection("CollectionName").Insert(&obj1, &obj2, &obj3)
+		_, _, err := e.ExecInsert(ctx, insertMany)
+*/
 func NewDB(ctx context.Context, c Connection) (DB, error) {
 	cfg := &tls.Config{
 		RootCAs: x509.NewCertPool(),
@@ -73,12 +101,29 @@ func NewDB(ctx context.Context, c Connection) (DB, error) {
 }
 
 /*
+Return the original mongo client
+*/
+func (s *sutandoDB) GetDB() *mongo.Client {
+	return s.client
+}
+
+/*
 The collection you want to operate.
 */
 func (s *sutandoDB) Collection(name string, opts ...*options.CollectionOptions) builder {
 	return builder{col: s.client.Database(s.db).Collection(name, opts...)}
 }
 
+/*
+Insert data in MongoDB
+
+	# Example:
+		insert := e.Collection("CollectionName").Insert(&obj)
+		_, _, err := e.ExecInsert(ctx, insert)
+
+		insertMany := e.Collection("CollectionName").Insert(&obj1, &obj2, &obj3)
+		_, _, err := e.ExecInsert(ctx, insertMany)
+*/
 func (s *sutandoDB) ExecInsert(ctx context.Context, i *insert) (insertOneResult, insertManyResult, error) {
 	var (
 		err  error
@@ -98,6 +143,15 @@ func (s *sutandoDB) ExecInsert(ctx context.Context, i *insert) (insertOneResult,
 	}
 }
 
+/*
+Find data in MongoDB
+
+	# Example:
+		result := struct{}
+		query := e.Collection("CollectionName").Find().Equal("field_a", "sutando").Greater("field_b", 300)
+
+		err := e.ExecQuery(ctx, query, &result)
+*/
 func (s *sutandoDB) ExecQuery(ctx context.Context, q *query, p any) error {
 	if reflect.TypeOf(p).Kind() != reflect.Pointer {
 		return errors.New("object to find should be a pointer")
