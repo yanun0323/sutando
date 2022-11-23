@@ -6,83 +6,87 @@ import (
 )
 
 type find struct {
-	col     *mongo.Collection
+	coll    *mongo.Collection
 	filters []filter
 }
 
-func newFind(collection *mongo.Collection) *find {
+func newFind(collection *mongo.Collection) query {
 	return &find{
-		col:     collection,
+		coll:    collection,
 		filters: []filter{}}
 }
 
-func (q *find) build() bson.D {
-	find := make(bson.D, 0, len(q.filters))
-	for i := range q.filters {
-		e := q.filters[i].bson().(bson.E)
-		find = append(find, e)
+func (f *find) build() bson.D {
+	query := make(bson.D, 0, len(f.filters))
+	for i := range f.filters {
+		e := f.filters[i].bson().(bson.E)
+		query = append(query, e)
 	}
-	return find
+	return query
 }
 
-func (q *find) Exists(key string, exists bool) *find {
-	return q.appendFilters("$exists", key, exists)
+func (f *find) col() *mongo.Collection {
+	return f.coll
 }
 
-func (q *find) And(key string, value any) *find {
-	return q.appendFilters("", key, value)
+func (f *find) Exists(key string, exists bool) query {
+	return f.appendFilters("$exists", key, exists)
 }
 
-func (q *find) Equal(key string, value any) *find {
-	return q.appendFilters("$eq", key, value)
+func (f *find) And(key string, value any) query {
+	return f.appendFilters("", key, value)
 }
 
-func (q *find) NotEqual(key string, value ...any) *find {
-	return q.appendFilters("$ne", key, value...).Exists(key, true)
+func (f *find) Equal(key string, value any) query {
+	return f.appendFilters("$eq", key, value)
 }
 
-func (q *find) Greater(key string, value any) *find {
-	return q.appendFilters("$gt", key, value)
+func (f *find) NotEqual(key string, value ...any) query {
+	return f.appendFilters("$ne", key, value...).Exists(key, true)
 }
 
-func (q *find) GreaterOrEqual(key string, value any) *find {
-	return q.appendFilters("$gte", key, value)
+func (f *find) Greater(key string, value any) query {
+	return f.appendFilters("$gt", key, value)
 }
 
-func (q *find) Less(key string, value any) *find {
-	return q.appendFilters("$lt", key, value)
+func (f *find) GreaterOrEqual(key string, value any) query {
+	return f.appendFilters("$gte", key, value)
 }
 
-func (q *find) LessOrEqual(key string, value any) *find {
-	return q.appendFilters("$lte", key, value)
+func (f *find) Less(key string, value any) query {
+	return f.appendFilters("$lt", key, value)
 }
 
-func (q *find) Bitwise(key string, value any) *find {
-	return q.appendFilters("$bitsAllSet", key, value)
+func (f *find) LessOrEqual(key string, value any) query {
+	return f.appendFilters("$lte", key, value)
 }
 
-func (q *find) Contain(key string, value ...any) *find {
+func (f *find) Bitwise(key string, value any) query {
+	return f.appendFilters("$bitsAllSet", key, value)
+}
+
+func (f *find) Contain(key string, value ...any) query {
 	if len(value) == 0 {
-		return q
+		return f
 	}
-	return q.appendFilters("$all", key, value...)
+	return f.appendFilters("$all", key, value...)
 }
 
-func (q *find) In(key string, value ...any) *find {
+func (f *find) In(key string, value ...any) query {
 	if len(value) == 0 {
-		return q
+		return f
 	}
-	return q.appendFilters("$in", key, value...)
+	return f.appendFilters("$in", key, value...)
 }
 
-func (q *find) NotIn(key string, value ...any) *find {
+func (f *find) NotIn(key string, value ...any) query {
 	if len(value) == 0 {
-		return q
+		return f
 	}
-	return q.appendFilters("$nin", key, value...)
+	return f.appendFilters("$nin", key, value...)
 }
 
-func (q *find) appendFilters(operation, key string, value ...any) *find {
-	q.filters = append(q.filters, newFilter(operation, key, value...))
-	return q
+func (f *find) appendFilters(operation, key string, value ...any) query {
+	f.filters = append(f.filters, newFilter(operation, key, value...))
+	return f
 }

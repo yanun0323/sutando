@@ -14,10 +14,10 @@ type ExampleFindStruct struct {
 
 func (e *Example) FindOne(ctx context.Context) (ExampleFindStruct, error) {
 	result := ExampleFindStruct{}
-	find := e.Collection("CollectionName").Find().
+	query := e.Collection("CollectionName").Find().
 		Equal("user_name", "Yanun").
 		Greater("amount", decimal.RequireFromString("300"))
-	if err := e.ExecFind(ctx, find, &result); err != nil {
+	if err := e.ExecFind(ctx, query, &result); err != nil {
 		return ExampleFindStruct{}, err
 	}
 	return result, nil
@@ -25,10 +25,10 @@ func (e *Example) FindOne(ctx context.Context) (ExampleFindStruct, error) {
 
 func (e *Example) FindMany(ctx context.Context) ([]ExampleFindStruct, error) {
 	result := []ExampleFindStruct{}
-	find := e.Collection("CollectionName").Find().
+	query := e.Collection("CollectionName").Find().
 		Equal("user_name", "Yanun").
 		Greater("amount", decimal.RequireFromString("300"))
-	if err := e.ExecFind(ctx, find, &result); err != nil {
+	if err := e.ExecFind(ctx, query, &result); err != nil {
 		return nil, err
 	}
 	return result, nil
