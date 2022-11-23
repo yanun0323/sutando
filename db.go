@@ -23,7 +23,8 @@ var (
 )
 
 type DB interface {
-	DB() *mongo.Client
+	Client() *mongo.Client
+	DB() *mongo.Database
 	Collection(name string, opts ...*options.CollectionOptions) builder
 	ExecInsert(ctx context.Context, i *insert) (insertOneResult, insertManyResult, error)
 	ExecQuery(ctx context.Context, q *query, p any) error
@@ -102,10 +103,17 @@ func NewDB(ctx context.Context, c Connection) (DB, error) {
 }
 
 /*
-Return the original mongo client
+Return mongo-diver client
 */
-func (s *sutandoDB) DB() *mongo.Client {
+func (s *sutandoDB) Client() *mongo.Client {
 	return s.client
+}
+
+/*
+Return mongo-diver database
+*/
+func (s *sutandoDB) DB() *mongo.Database {
+	return s.client.Database(s.db)
 }
 
 /*
