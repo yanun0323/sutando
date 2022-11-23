@@ -23,10 +23,38 @@ var (
 )
 
 type DB interface {
+	/*
+		Return mongo client diver
+	*/
 	Client() *mongo.Client
+	/*
+		Return mongo database diver
+	*/
 	DB() *mongo.Database
+	/*
+		The collection you want to operate.
+	*/
 	Collection(name string, opts ...*options.CollectionOptions) builder
+	/*
+		Insert data in MongoDB
+
+			# Example:
+				insert := e.Collection("CollectionName").Insert(&obj)
+				_, _, err := e.ExecInsert(ctx, insert)
+
+				insertMany := e.Collection("CollectionName").Insert(&obj1, &obj2, &obj3)
+				_, _, err := e.ExecInsert(ctx, insertMany)
+	*/
 	ExecInsert(ctx context.Context, i *insert) (insertOneResult, insertManyResult, error)
+	/*
+		Find data in MongoDB
+
+			# Example:
+				result := struct{}
+				find := e.Collection("CollectionName").Find().Equal("field_a", "sutando").Greater("field_b", 300)
+
+				err := e.ExecFind(ctx, find, &result)
+	*/
 	ExecFind(ctx context.Context, q *find, p any) error
 	ExecUpdate(ctx context.Context, u *update, upsert bool) (updateResult, error)
 }
@@ -102,37 +130,18 @@ func NewDB(ctx context.Context, c Connection) (DB, error) {
 	return &sutandoDB{client, c.Database()}, nil
 }
 
-/*
-Return mongo-diver client
-*/
 func (s *sutandoDB) Client() *mongo.Client {
 	return s.client
 }
 
-/*
-Return mongo-diver database
-*/
 func (s *sutandoDB) DB() *mongo.Database {
 	return s.client.Database(s.db)
 }
 
-/*
-The collection you want to operate.
-*/
 func (s *sutandoDB) Collection(name string, opts ...*options.CollectionOptions) builder {
 	return builder{col: s.client.Database(s.db).Collection(name, opts...)}
 }
 
-/*
-Insert data in MongoDB
-
-	# Example:
-		insert := e.Collection("CollectionName").Insert(&obj)
-		_, _, err := e.ExecInsert(ctx, insert)
-
-		insertMany := e.Collection("CollectionName").Insert(&obj1, &obj2, &obj3)
-		_, _, err := e.ExecInsert(ctx, insertMany)
-*/
 func (s *sutandoDB) ExecInsert(ctx context.Context, i *insert) (insertOneResult, insertManyResult, error) {
 	var (
 		err  error
@@ -152,15 +161,6 @@ func (s *sutandoDB) ExecInsert(ctx context.Context, i *insert) (insertOneResult,
 	}
 }
 
-/*
-Find data in MongoDB
-
-	# Example:
-		result := struct{}
-		find := e.Collection("CollectionName").Find().Equal("field_a", "sutando").Greater("field_b", 300)
-
-		err := e.ExecFind(ctx, find, &result)
-*/
 func (s *sutandoDB) ExecFind(ctx context.Context, f *find, p any) error {
 	if reflect.TypeOf(p).Kind() != reflect.Pointer {
 		return errors.New("object to find should be a pointer")
