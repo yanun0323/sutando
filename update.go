@@ -29,16 +29,16 @@ func newUpdate(collection *mongo.Collection, p ...any) *update {
 	}
 }
 
-func (u *update) buildQueryOrID() bson.D {
+func (u *update) buildFindOrID() bson.D {
 	if u.id > 0 {
 		return bson.D{{Key: "_id", Value: u.id}}
 	}
-	query := make(bson.D, 0, len(u.filters))
+	find := make(bson.D, 0, len(u.filters))
 	for i := range u.filters {
 		e := u.filters[i].bson().(bson.E)
-		query = append(query, e)
+		find = append(find, e)
 	}
-	return query
+	return find
 }
 
 func (u *update) buildObjects() []any {

@@ -27,7 +27,7 @@ type DB interface {
 	DB() *mongo.Database
 	Collection(name string, opts ...*options.CollectionOptions) builder
 	ExecInsert(ctx context.Context, i *insert) (insertOneResult, insertManyResult, error)
-	ExecQuery(ctx context.Context, q *query, p any) error
+	ExecFind(ctx context.Context, q *find, p any) error
 	ExecUpdate(ctx context.Context, u *update, upsert bool) (updateResult, error)
 }
 
@@ -54,9 +54,9 @@ Create a new connection to MongoDB
 
 	# Find:
 		result := struct{}
-		query := e.Collection("CollectionName").Find().Equal("field_a", "sutando").Greater("field_b", 300)
+		find := e.Collection("CollectionName").Find().Equal("field_a", "sutando").Greater("field_b", 300)
 
-		err := e.ExecQuery(ctx, query, &result)
+		err := e.ExecFind(ctx, find, &result)
 
 	# Insert
 		insert := e.Collection("CollectionName").Insert(&obj)
@@ -157,11 +157,11 @@ Find data in MongoDB
 
 	# Example:
 		result := struct{}
-		query := e.Collection("CollectionName").Find().Equal("field_a", "sutando").Greater("field_b", 300)
+		find := e.Collection("CollectionName").Find().Equal("field_a", "sutando").Greater("field_b", 300)
 
-		err := e.ExecQuery(ctx, query, &result)
+		err := e.ExecFind(ctx, find, &result)
 */
-func (s *sutandoDB) ExecQuery(ctx context.Context, q *query, p any) error {
+func (s *sutandoDB) ExecFind(ctx context.Context, f *find, p any) error {
 	if reflect.TypeOf(p).Kind() != reflect.Pointer {
 		return errors.New("object to find should be a pointer")
 	}
@@ -170,13 +170,13 @@ func (s *sutandoDB) ExecQuery(ctx context.Context, q *query, p any) error {
 		return errors.New("object to find cannot be an array")
 	}
 	if kind == reflect.Slice {
-		return execQueryMany(ctx, q, p)
+		return execFindMany(ctx, f, p)
 	}
-	return execQueryOne(ctx, q, p)
+	return execFindOne(ctx, f, p)
 
 }
 
-func execQueryOne(ctx context.Context, q *query, p any) error {
+func execFindOne(ctx context.Context, q *find, p any) error {
 	result := q.col.FindOne(ctx, q.build())
 	err := result.Decode(p)
 	if err != nil {
@@ -185,7 +185,7 @@ func execQueryOne(ctx context.Context, q *query, p any) error {
 	return nil
 }
 
-func execQueryMany(ctx context.Context, q *query, p any) error {
+func execFindMany(ctx context.Context, q *find, p any) error {
 	cursor, err := q.col.Find(ctx, q.build())
 	if err != nil {
 		return err
@@ -203,10 +203,10 @@ func (s *sutandoDB) ExecUpdate(ctx context.Context, u *update, upsert bool) (upd
 		return nil, errors.New("object to insert should be pointer")
 	case 1:
 		if u.id > 0 {
-			return u.col.UpdateByID(ctx, u.buildQueryOrID(), u.buildObjects())
+			return u.col.UpdateByID(ctx, u.buildFindOrID(), u.buildObjects())
 		}
-		return u.col.UpdateOne(ctx, u.buildQueryOrID(), u.buildObjects(), &options.UpdateOptions{Upsert: &upsert})
+		return u.col.UpdateOne(ctx, u.buildFindOrID(), u.buildObjects(), &options.UpdateOptions{Upsert: &upsert})
 	default:
-		return u.col.UpdateMany(ctx, u.buildQueryOrID(), u.buildObjects(), &options.UpdateOptions{Upsert: &upsert})
+		return u.col.UpdateMany(ctx, u.buildFindOrID(), u.buildObjects(), &options.UpdateOptions{Upsert: &upsert})
 	}
 }

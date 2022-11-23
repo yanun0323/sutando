@@ -64,26 +64,26 @@ func (su dbSuite) Test_ExecInsertMany() {
 	su.Assert().NotNil(result)
 }
 
-func (su dbSuite) Test_ExecQueryOne_None_Good() {
-	query := su.db.Collection("TestOne").Find()
+func (su dbSuite) Test_ExecFindOne_None_Good() {
+	find := su.db.Collection("TestOne").Find()
 	var a testStruct
-	err := su.db.ExecQuery(su.Ctx, query, &a)
+	err := su.db.ExecFind(su.Ctx, find, &a)
 	su.Nil(err)
 	fmt.Printf("%+v\n", a)
 }
 
-func (su dbSuite) Test_ExecQueryOne_Equal_Good() {
-	query := su.db.Collection("TestOne").Find().Equal("nameName", "NotYanun")
+func (su dbSuite) Test_ExecFindOne_Equal_Good() {
+	find := su.db.Collection("TestOne").Find().Equal("nameName", "NotYanun")
 	var a testStruct
-	err := su.db.ExecQuery(su.Ctx, query, &a)
+	err := su.db.ExecFind(su.Ctx, find, &a)
 	su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 	fmt.Printf("%+v\n", a)
 }
 
-func (su dbSuite) Test_ExecQueryMany() {
-	query := su.db.Collection("TestMany").Find().Contain("arr", 1, 3, 5)
+func (su dbSuite) Test_ExecFindMany() {
+	find := su.db.Collection("TestMany").Find().Contain("arr", 1, 3, 5)
 	var a []testStruct
-	err := su.db.ExecQuery(su.Ctx, query, &a)
+	err := su.db.ExecFind(su.Ctx, find, &a)
 	su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 	fmt.Printf("%+v\n", a)
 }
