@@ -33,31 +33,41 @@ type DB interface {
 	*/
 	DB() *mongo.Database
 	/*
-		The collection you want to operate.
+		Collection you want to operate.
 	*/
 	Collection(name string, opts ...*options.CollectionOptions) builder
 	/*
 		Insert data in MongoDB
-
 			# Example:
-				insert := e.Collection("CollectionName").Insert(&obj)
-				_, _, err := e.ExecInsert(ctx, insert)
+				insert := db.Collection("CollectionName").Insert(&obj)
+				_, _, err := db.ExecInsert(ctx, insert)
 
-				insertMany := e.Collection("CollectionName").Insert(&obj1, &obj2, &obj3)
-				_, _, err := e.ExecInsert(ctx, insertMany)
+				insertMany := db.Collection("CollectionName").Insert(&obj1, &obj2, &obj3)
+				_, _, err := db.ExecInsert(ctx, insertMany)
 	*/
 	ExecInsert(ctx context.Context, i *insert) (insertOneResult, insertManyResult, error)
 	/*
 		Find data in MongoDB
-
 			# Example:
 				result := struct{}
-				query := e.Collection("CollectionName").Find().Equal("field_a", "sutando").Greater("field_b", 300)
+				query := db.Collection("CollectionName").Find().Equal("Name", "sutando").Greater("Number", 300)
 
-				err := e.ExecFind(ctx, query, &result)
+				err := db.ExecFind(ctx, query, &result)
 	*/
 	ExecFind(ctx context.Context, q query, p any) error
+	/*
+		Update data in MongoDB
+			# Example:
+				update := db.Collection("Collection").Update().Equal("Field", "sutando").Set("Field", "hello")
+				result, err := su.db.ExecUpdate(su.ctx, update, false)
+	*/
 	ExecUpdate(ctx context.Context, u update, upsert bool) (updateResult, error)
+	/*
+		Delete data in MongoDB
+			# Example:
+				delete := db.Collection("Collection").Delete().Equal("Field", "sutando")
+				result, err := su.db.ExecDelete(su.ctx, delete)
+	*/
 	ExecDelete(ctx context.Context, q query) (deleteResult, error)
 }
 
@@ -84,16 +94,33 @@ Create a new connection to MongoDB
 
 	# Find:
 		result := struct{}
-		query := e.Collection("CollectionName").Find().Equal("field_a", "sutando").Greater("field_b", 300)
-
-		err := e.ExecFind(ctx, query, &result)
+		query := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).First()
+		err := db.ExecFind(ctx, query, &result)
 
 	# Insert
-		insert := e.Collection("CollectionName").Insert(&obj)
-		_, _, err := e.ExecInsert(ctx, insert)
+		insert := db.Collection("Collection").Insert(&obj)
+		result, _, err := db.ExecInsert(ctx, insert)
 
-		insertMany := e.Collection("CollectionName").Insert(&obj1, &obj2, &obj3)
-		_, _, err := e.ExecInsert(ctx, insertMany)
+		insertMany := db.Collection("Collection").Insert(&obj1, &obj2, &obj3)
+		_, resultMant, err := db.ExecInsert(ctx, insertMany)
+	# Update with Model
+		update := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando").First()
+		result, err := db.ExecUpdate(su.ctx, updateOne, false)
+
+		updateMany := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando")
+		result, err := db.ExecUpdate(su.ctx, updateMany, false)
+	# Update with Set
+		update := db.Collection("Collection").Update().Equal("Field", "sutando").First().Set("Field", "hello")
+		result, err := db.ExecUpdate(su.ctx, updateOne, false)
+
+		updateMany := db.Collection("Collection").Update().Equal("Field", "sutando").Set("Field", "hello")
+		result, err := db.ExecUpdate(su.ctx, updateMany, false)
+	# Delete
+		delete := db.Collection("Collection").Delete().Equal("Field", "sutando").First()
+		result, err := db.ExecDelete(su.ctx, delete)
+
+		deleteMany := db.Collection("Collection").Delete().Equal("Field", "sutando")
+		result, err := db.ExecDelete(su.ctx, deleteMany)
 */
 func NewDB(ctx context.Context, c Connection) (DB, error) {
 	cfg := &tls.Config{
