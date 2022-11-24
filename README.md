@@ -54,7 +54,7 @@ $ go get -u github.com/yanun0323/sutando
     _, resultMant, err := e.ExecInsert(ctx, insertMany)
 ```
     
-#### Update with Model
+#### Update with Model (Will update all fields include empty fields)
 ```go
     update := su.db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando").First()
     result, err := su.db.ExecUpdate(su.ctx, updateOne, false)
