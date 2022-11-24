@@ -79,7 +79,7 @@ $ go get -u github.com/yanun0323/sutando
     result, err := su.db.ExecDelete(su.ctx, deleteMany)
 ```
 
-#### User mongo-driver instance
+#### Use original mongo-driver instance
 ```go
     mongoClient := db.Client()
     mongoDB := db.DB()
