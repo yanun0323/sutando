@@ -1,5 +1,5 @@
 # Sutando
-A go package that encapsulate mongo operation.
+A go package encapsulate mongo-driver.
 
 
 ## Install
