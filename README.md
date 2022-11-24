@@ -63,3 +63,9 @@ $ go get -u github.com/yanun0323/sutando
     deleteMany := su.db.Collection("Collection").Delete().Equal("Field", "sutando")
     result, err := su.db.ExecDelete(su.ctx, deleteMany)
 ```
+
+#### User mongo-driver instance
+```go
+    mongoClient := db.Client()
+    mongoDB := db.DB()
+``` 
