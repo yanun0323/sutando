@@ -9,6 +9,21 @@ A go package that encapsulate mongo operation.
 $ go get -u github.com/yanun0323/sutando
 ```
 
+## Query Parameters
+
+- Exists
+- And
+- Equal
+- NotEqual
+- Greater
+- GreaterOrEqual
+- Less
+- LessOrEqual
+- Bitwise
+- Contain
+- In
+- NotIn
+
 ## Example
 
 #### Connect To MongoDB
