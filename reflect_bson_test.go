@@ -11,7 +11,7 @@ func Test_GetStructBson_1(t *testing.T) {
 	d := mockData()
 	assert.NotNil(t, d)
 
-	bs := bsonEncoder(&d, "Test1", false)
+	bs := bsonEncoder(&d, "Test1")
 	assert.NotNil(t, bs)
 }
 
@@ -32,7 +32,7 @@ func Test_GetStructBson_2(t *testing.T) {
 		FourthField: "4",
 		FifthField:  "5",
 	}
-	hash := bsonEncoder(&d, "", false)
+	hash := bsonEncoder(&d, "")
 	assert.NotNil(t, hash)
 
 	for k := range hash {

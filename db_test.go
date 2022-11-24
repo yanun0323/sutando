@@ -3,16 +3,17 @@ package sutando
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/yanun0323/pkg/logs"
 )
 
 type dbSuite struct {
 	suite.Suite
 	db  DB
-	Ctx context.Context
+	ctx context.Context
+	l   *logs.Logger
 }
 
 func (su *dbSuite) SetupSuite() {
@@ -29,70 +30,103 @@ func (su *dbSuite) SetupSuite() {
 	su.Require().Nil(err)
 	su.Require().NotNil(s)
 	su.db = s
-	su.Ctx = ctx
+	su.ctx = ctx
+	su.l = logs.New("dbSuite", 2)
 }
 
 func TestDB(t *testing.T) {
 	suite.Run(t, new(dbSuite))
 }
 
-func (su dbSuite) Test_ExecInsertOne() {
-	data := mockData()
+func (su dbSuite) Test_CRUD() {
+	{
+		data := mockData()
+		insOne := su.db.Collection("TestCRUD").Insert(&data)
+		resultOne, _, err := su.db.ExecInsert(su.ctx, insOne)
+		su.Assert().Nil(err)
+		su.Assert().NotNil(resultOne)
+		su.l.Debug("insert one ID: ", resultOne.InsertedID)
 
-	ins := su.db.Collection("TestOne").Insert(&data)
-	result, n, err := su.db.ExecInsert(su.Ctx, ins)
-	su.Assert().Nil(n)
-	su.Assert().Nil(err)
-	su.Assert().NotNil(result)
+		insMany := su.db.Collection("TestCRUD").Insert(&data, &data, &data)
+		_, resultMany, err := su.db.ExecInsert(su.ctx, insMany)
+		su.Assert().Nil(err)
+		su.Assert().NotNil(resultMany)
+		su.l.Debug("insert count: ", len(resultMany.InsertedIDs))
 
-	data.StructName = "NotYanun"
-	ins = su.db.Collection("TestOne").Insert(&data)
-	result, n, err = su.db.ExecInsert(su.Ctx, ins)
-	su.Assert().Nil(n)
-	su.Assert().Nil(err)
-	su.Assert().NotNil(result)
-}
+	}
 
-func (su dbSuite) Test_ExecInsertMany() {
-	data := mockData()
+	var One testStruct
+	{
+		queryOneFist := su.db.Collection("TestCRUD").Find().First()
+		su.Nil(su.db.ExecFind(su.ctx, queryOneFist, &One))
+		su.NotEmpty(One)
 
-	ins := su.db.Collection("TestMany").Insert(&data, &data)
-	n, result, err := su.db.ExecInsert(su.Ctx, ins)
+		queryOneFistFailed := su.db.Collection("TestCRUD").Find()
+		su.Error(su.db.ExecFind(su.ctx, queryOneFistFailed, &One))
+	}
 
-	su.Assert().Nil(n)
-	su.Assert().Nil(err)
-	su.Assert().NotNil(result)
-}
+	{
+		var a []testStruct
 
-func (su dbSuite) Test_ExecFindOne_None_Good() {
-	query := su.db.Collection("TestOne").Find()
-	var a testStruct
-	err := su.db.ExecFind(su.Ctx, query, &a)
-	su.Nil(err)
-	fmt.Printf("%+v\n", a)
-}
+		query := su.db.Collection("TestCRUD").Find()
+		err := su.db.ExecFind(su.ctx, query, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
+		su.l.Debug("find all count: ", len(a))
+	}
 
-func (su dbSuite) Test_ExecFindOne_Equal_Good() {
-	query := su.db.Collection("TestOne").Find().Equal("nameName", "NotYanun")
-	var a testStruct
-	err := su.db.ExecFind(su.Ctx, query, &a)
-	su.True(err == nil || errors.Is(err, ErrNoDocument), err)
-	fmt.Printf("%+v\n", a)
-}
+	{
+		var a testStruct
 
-func (su dbSuite) Test_ExecFindMany() {
-	query := su.db.Collection("TestMany").Find().Contain("arr", 1, 3, 5)
-	var a []testStruct
-	err := su.db.ExecFind(su.Ctx, query, &a)
-	su.True(err == nil || errors.Is(err, ErrNoDocument), err)
-	fmt.Printf("%+v\n", a)
-}
+		query := su.db.Collection("TestCRUD").Find().Equal("structName", "Yanun").First()
+		err := su.db.ExecFind(su.ctx, query, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
 
-func (su dbSuite) Test_UpdateOne_Equal_Good() {
-	data := mockData()
-	data.StructName = "Vin"
-	update := su.db.Collection("TestMany").Update(&data).Equal("nameName", "Yanun")
-	result, err := su.db.ExecUpdate(su.Ctx, update, false)
-	su.True(err == nil || errors.Is(err, ErrNoDocument), err)
-	fmt.Println("update count: ", result.ModifiedCount)
+		query = su.db.Collection("TestCRUD").Find().Equal("structName", "Yanun")
+		err = su.db.ExecFind(su.ctx, query, &a)
+		su.Error(err)
+	}
+
+	{
+		var a []testStruct
+
+		query := su.db.Collection("TestCRUD").Find().Contain("arrTest", 1, 3, 5).First()
+		err := su.db.ExecFind(su.ctx, query, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
+		su.l.Debug("find contain first count: ", len(a))
+
+		query = su.db.Collection("TestCRUD").Find().Contain("arrTest", 1, 3, 5)
+		err = su.db.ExecFind(su.ctx, query, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
+		su.l.Debug("find contain count: ", len(a))
+	}
+
+	{
+		data := mockData()
+		data.StructName = "Vin"
+		update := su.db.Collection("TestCRUD").UpdateWith(&data).Equal("structName", "Yanun").First()
+		result, err := su.db.ExecUpdate(su.ctx, update, false)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.l.Debug("update first count: ", result.ModifiedCount)
+
+		update = su.db.Collection("TestCRUD").UpdateWith(&data).Equal("structName", "Yanun")
+		result, err = su.db.ExecUpdate(su.ctx, update, false)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.l.Debug("update count: ", result.ModifiedCount)
+	}
+
+	{
+		query := su.db.Collection("TestCRUD").Delete().Equal("structName", "Vin").First()
+		result, err := su.db.ExecDelete(su.ctx, query)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.l.Debug("delete count: ", result.DeletedCount)
+
+		query = su.db.Collection("TestCRUD").Delete().Equal("structName", "Vin")
+		result, err = su.db.ExecDelete(su.ctx, query)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.l.Debug("delete count: ", result.DeletedCount)
+	}
 }

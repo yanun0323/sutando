@@ -8,6 +8,7 @@ import (
 type find struct {
 	coll    *mongo.Collection
 	filters []filter
+	one     bool
 }
 
 func newFind(collection *mongo.Collection) query {
@@ -84,6 +85,15 @@ func (f *find) NotIn(key string, value ...any) query {
 		return f
 	}
 	return f.appendFilters("$nin", key, value...)
+}
+
+func (f *find) First() query {
+	f.one = true
+	return f
+}
+
+func (f *find) isOne() bool {
+	return f.one
 }
 
 func (f *find) appendFilters(operation, key string, value ...any) query {

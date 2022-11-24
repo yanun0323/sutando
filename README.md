@@ -8,4 +8,3 @@ A go package that encapsulate mongo operation.
 ```$go get -u github.com/yanun0323/sutando```
 
 ## Example
-Check the `example` folder to know how to use sutando.

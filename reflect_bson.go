@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func bsonEncoder(p any, key string, update bool) bson.M {
+func bsonEncoder(p any, key string) bson.M {
 	elem := reflect.ValueOf(p).Elem()
 	if elem.Kind() != reflect.Struct {
 		return nil
@@ -21,11 +21,8 @@ func bsonEncoder(p any, key string, update bool) bson.M {
 		if skip {
 			continue
 		}
-		result[label] = valueParse(elem.Field(i))
-	}
 
-	if update {
-		result = bson.M{"$set": result}
+		result[label] = valueParse(elem.Field(i))
 	}
 
 	if len(key) > 0 {

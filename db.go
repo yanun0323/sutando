@@ -4,10 +4,10 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"errors"
 	"fmt"
 	"reflect"
 
+	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -17,6 +17,7 @@ import (
 type insertOneResult *mongo.InsertOneResult
 type insertManyResult *mongo.InsertManyResult
 type updateResult *mongo.UpdateResult
+type deleteResult *mongo.DeleteResult
 
 var (
 	ErrNoDocument = mongo.ErrNoDocuments
@@ -57,6 +58,7 @@ type DB interface {
 	*/
 	ExecFind(ctx context.Context, q query, p any) error
 	ExecUpdate(ctx context.Context, u update, upsert bool) (updateResult, error)
+	ExecDelete(ctx context.Context, q query) (deleteResult, error)
 }
 
 type sutandoDB struct {
@@ -169,18 +171,33 @@ func (s *sutandoDB) ExecFind(ctx context.Context, q query, p any) error {
 	if kind == reflect.Array {
 		return errors.New("object to find cannot be an array")
 	}
-	if kind == reflect.Slice {
+
+	if kind != reflect.Slice {
+		if !q.isOne() {
+			return errors.New("find too many results! use query with 'First' to find one result")
+		}
+		return execFindOne(ctx, q, p)
+	}
+
+	if !q.isOne() {
 		return execFindMany(ctx, q, p)
 	}
-	return execFindOne(ctx, q, p)
 
+	obj := reflect.New(reflect.TypeOf(p).Elem().Elem())
+	err := execFindOne(ctx, q, obj.Interface())
+	if err != nil {
+		return err
+	}
+	sli := reflect.Append(reflect.ValueOf(p).Elem(), obj.Elem())
+	reflect.ValueOf(p).Elem().Set(sli)
+	return nil
 }
 
 func execFindOne(ctx context.Context, q query, p any) error {
 	result := q.col().FindOne(ctx, q.build())
 	err := result.Decode(p)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "find")
 	}
 	return nil
 }
@@ -198,13 +215,15 @@ func execFindMany(ctx context.Context, q query, p any) error {
 }
 
 func (s *sutandoDB) ExecUpdate(ctx context.Context, u update, upsert bool) (updateResult, error) {
-	objects := u.buildObjects()
-	switch len(objects) {
-	case 0:
-		return nil, errors.New("object to update should be pointer")
-	case 1:
-		return u.col().UpdateOne(ctx, u.build(), objects[0], &options.UpdateOptions{Upsert: &upsert})
-	default:
-		return u.col().UpdateMany(ctx, u.build(), objects, &options.UpdateOptions{Upsert: &upsert})
+	if u.isOne() {
+		return u.col().UpdateOne(ctx, u.build(), u.buildObjects(), &options.UpdateOptions{Upsert: &upsert})
 	}
+	return u.col().UpdateMany(ctx, u.build(), u.buildObjects(), &options.UpdateOptions{Upsert: &upsert})
+}
+
+func (s *sutandoDB) ExecDelete(ctx context.Context, q query) (deleteResult, error) {
+	if q.isOne() {
+		return q.col().DeleteOne(ctx, q.build(), &options.DeleteOptions{})
+	}
+	return q.col().DeleteMany(ctx, q.build(), &options.DeleteOptions{})
 }

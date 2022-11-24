@@ -19,7 +19,7 @@ func newInsert(collection *mongo.Collection, p ...any) *insert {
 		if reflect.TypeOf(p[i]).Kind() != reflect.Pointer {
 			continue
 		}
-		d = append(d, bsonEncoder(p[i], reflect.TypeOf(p).Name(), false))
+		d = append(d, bsonEncoder(p[i], reflect.TypeOf(p).Name()))
 	}
 	return &insert{
 		col:  collection,

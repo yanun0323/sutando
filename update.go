@@ -8,21 +8,21 @@ import (
 )
 
 type updateQ struct {
-	data []bson.M
+	data bson.M
 	q    query
+	one  bool
+	set  bson.M
 }
 
-func newUpdate(collection *mongo.Collection, p ...any) update {
-	d := make([]bson.M, 0, len(p))
-	for i := range p {
-		if reflect.TypeOf(p[i]).Kind() != reflect.Pointer {
-			continue
-		}
-		d = append(d, bsonEncoder(p[i], reflect.TypeOf(p).Name(), true))
+func newUpdate(collection *mongo.Collection, p any) update {
+	var d bson.M = nil
+	if p != nil {
+		d = bsonEncoder(p, reflect.TypeOf(p).Name())
 	}
 	return &updateQ{
 		q:    newFind(collection),
 		data: d,
+		set:  bson.M{},
 	}
 }
 
@@ -34,12 +34,11 @@ func (u *updateQ) build() bson.D {
 	return u.q.build()
 }
 
-func (u *updateQ) buildObjects() []any {
-	result := make([]any, 0, len(u.data))
-	for i := range u.data {
-		result = append(result, u.data[i])
+func (u *updateQ) buildObjects() any {
+	if u.data != nil {
+		return bson.M{"$set": u.data}
 	}
-	return result
+	return bson.M{"$set": u.set}
 }
 
 func (u *updateQ) Exists(key string, exists bool) update {
@@ -99,5 +98,19 @@ func (u *updateQ) In(key string, value ...any) update {
 
 func (u *updateQ) NotIn(key string, value ...any) update {
 	u.q.NotIn(key, value...)
+	return u
+}
+
+func (u *updateQ) First() update {
+	u.one = true
+	return u
+}
+
+func (u *updateQ) isOne() bool {
+	return u.one
+}
+
+func (u *updateQ) Set(key string, value any) update {
+	u.set[key] = value
 	return u
 }

@@ -5,9 +5,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type query interface {
+type common interface {
 	col() *mongo.Collection
 	build() bson.D
+	isOne() bool
+}
+
+type query interface {
+	common
 
 	Exists(key string, exists bool) query
 	And(key string, value any) query
@@ -21,11 +26,11 @@ type query interface {
 	Contain(key string, value ...any) query
 	In(key string, value ...any) query
 	NotIn(key string, value ...any) query
+	First() query
 }
 
 type update interface {
-	col() *mongo.Collection
-	build() bson.D
+	common
 
 	Exists(key string, exists bool) update
 	And(key string, value any) update
@@ -39,6 +44,9 @@ type update interface {
 	Contain(key string, value ...any) update
 	In(key string, value ...any) update
 	NotIn(key string, value ...any) update
+	First() update
 
-	buildObjects() []any
+	Set(key string, value any) update
+
+	buildObjects() any
 }
