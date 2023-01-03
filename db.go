@@ -159,6 +159,45 @@ func NewDB(ctx context.Context, c Connection) (DB, error) {
 	return &sutandoDB{client, c.Database()}, nil
 }
 
+/*
+Create a exist connection to MongoDB
+
+	# --- How To Use ---
+
+	# Find:
+		result := struct{}
+		query := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).First()
+		err := db.ExecFind(ctx, query, &result)
+
+	# Insert
+		insert := db.Collection("Collection").Insert(&obj)
+		result, _, err := db.ExecInsert(ctx, insert)
+
+		insertMany := db.Collection("Collection").Insert(&obj1, &obj2, &obj3)
+		_, resultMant, err := db.ExecInsert(ctx, insertMany)
+	# Update with Model
+		update := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando").First()
+		result, err := db.ExecUpdate(su.ctx, updateOne, false)
+
+		updateMany := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando")
+		result, err := db.ExecUpdate(su.ctx, updateMany, false)
+	# Update with Set
+		update := db.Collection("Collection").Update().Equal("Field", "sutando").First().Set("Field", "hello")
+		result, err := db.ExecUpdate(su.ctx, updateOne, false)
+
+		updateMany := db.Collection("Collection").Update().Equal("Field", "sutando").Set("Field", "hello")
+		result, err := db.ExecUpdate(su.ctx, updateMany, false)
+	# Delete
+		delete := db.Collection("Collection").Delete().Equal("Field", "sutando").First()
+		result, err := db.ExecDelete(su.ctx, delete)
+
+		deleteMany := db.Collection("Collection").Delete().Equal("Field", "sutando")
+		result, err := db.ExecDelete(su.ctx, deleteMany)
+*/
+func NewDBFromMongo(ctx context.Context, client *mongo.Client, database string) DB {
+	return &sutandoDB{client, database}
+}
+
 func (s *sutandoDB) Client() *mongo.Client {
 	return s.client
 }
