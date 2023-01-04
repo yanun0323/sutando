@@ -102,7 +102,7 @@ Create a new mongoDB connection
 		result, _, err := db.ExecInsert(ctx, insert)
 
 		insertMany := db.Collection("Collection").Insert(&obj1, &obj2, &obj3)
-		_, resultMant, err := db.ExecInsert(ctx, insertMany)
+		_, resultMany, err := db.ExecInsert(ctx, insertMany)
 	# Update with Model
 		update := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando").First()
 		result, err := db.ExecUpdate(su.ctx, updateOne, false)
@@ -164,6 +164,12 @@ Create a mongoDB connection with an existed mongo-driver
 
 	# --- How To Use ---
 
+	# Sample Code:
+		var client *mongo.Client
+		...
+		database := "example"
+		db := sutando.NewDBFromMongo(ctx, client, database)
+
 	# Find:
 		result := struct{}
 		query := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).First()
@@ -174,7 +180,7 @@ Create a mongoDB connection with an existed mongo-driver
 		result, _, err := db.ExecInsert(ctx, insert)
 
 		insertMany := db.Collection("Collection").Insert(&obj1, &obj2, &obj3)
-		_, resultMant, err := db.ExecInsert(ctx, insertMany)
+		_, resultMany, err := db.ExecInsert(ctx, insertMany)
 	# Update with Model
 		update := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando").First()
 		result, err := db.ExecUpdate(su.ctx, updateOne, false)

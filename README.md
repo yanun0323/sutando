@@ -44,7 +44,7 @@ $ go get -u github.com/yanun0323/sutando
 - Use an exist connection
 ```go
     var client *mongo.Client
-    /* initial the mongo-driver client */
+    ...
     database := "example"
     db := sutando.NewDBFromMongo(ctx, client, database)
 
@@ -62,7 +62,7 @@ $ go get -u github.com/yanun0323/sutando
     result, _, err := db.ExecInsert(ctx, insert)
 
     insertMany := db.Collection("Collection").Insert(&obj1, &obj2, &obj3)
-    _, resultMant, err := db.ExecInsert(ctx, insertMany)
+    _, resultMany, err := db.ExecInsert(ctx, insertMany)
 ```
     
 #### Update with Model (Will update all fields include empty fields)
