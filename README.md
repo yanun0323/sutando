@@ -92,6 +92,6 @@ $ go get -u github.com/yanun0323/sutando
 
 #### Use original mongo-driver instance
 ```go
-    mongoClient := db.Client()
-    mongoDB := db.DB()
+    client := db.GetDriver()
+    db := db.GetDriverDB()
 ``` 
