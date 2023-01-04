@@ -12,7 +12,7 @@ type testTagStruct struct {
 	SecondField string `bson:"secondField"`
 	thirdField  string `bson:"ThirdField"`
 	fourthField string
-	fifthField  string `bson:"-"`
+	FifthField  string `bson:"-"`
 }
 
 func Test_getTag(t *testing.T) {
