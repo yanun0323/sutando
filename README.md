@@ -27,6 +27,8 @@ $ go get -u github.com/yanun0323/sutando
 ## Example
 
 #### Connect To MongoDB
+
+- Create a new connection
 ```go
     db, err := sutando.NewDB(ctx, sutando.Conn{
         Username:  "example",
@@ -37,6 +39,15 @@ $ go get -u github.com/yanun0323/sutando
         AdminAuth: true,
         Pem:       "",		// optional
     })
+```
+
+- Use an exist connection
+```go
+    var client *mongo.Client
+    /* initial the mongo-driver client */
+    database := "example"
+    db := sutando.NewDBFromMongo(ctx, client, database)
+
 ```
 
 #### Find

@@ -77,7 +77,7 @@ type sutandoDB struct {
 }
 
 /*
-Create a new connection to MongoDB
+Create a new mongoDB connection
 
 	# Sample Code:
 		db, err := sutando.NewDB(ctx, sutando.Conn{
@@ -160,7 +160,7 @@ func NewDB(ctx context.Context, c Connection) (DB, error) {
 }
 
 /*
-Create a exist connection to MongoDB
+Create a mongoDB connection with an existed mongo-driver
 
 	# --- How To Use ---
 
