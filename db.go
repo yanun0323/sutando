@@ -27,11 +27,11 @@ type DB interface {
 	/*
 		Return mongo client diver
 	*/
-	Client() *mongo.Client
+	GetDriver() *mongo.Client
 	/*
 		Return mongo database diver
 	*/
-	DB() *mongo.Database
+	GetDriverDB() *mongo.Database
 	/*
 		Collection you want to operate.
 	*/
@@ -198,11 +198,11 @@ func NewDBFromMongo(ctx context.Context, client *mongo.Client, database string) 
 	return &sutandoDB{client, database}
 }
 
-func (s *sutandoDB) Client() *mongo.Client {
+func (s *sutandoDB) GetDriver() *mongo.Client {
 	return s.client
 }
 
-func (s *sutandoDB) DB() *mongo.Database {
+func (s *sutandoDB) GetDriverDB() *mongo.Database {
 	return s.client.Database(s.db)
 }
 
