@@ -3,10 +3,13 @@ package sutando
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/yanun0323/pkg/logs"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type dbSuite struct {
@@ -16,7 +19,7 @@ type dbSuite struct {
 	l   *logs.Logger
 }
 
-func (su *dbSuite) SetupSuite() {
+func (su *dbSuite) SetupTest() {
 	ctx := context.Background()
 	s, err := NewDB(ctx, Conn{
 		Username:  "test",
@@ -32,6 +35,15 @@ func (su *dbSuite) SetupSuite() {
 	su.db = s
 	su.ctx = ctx
 	su.l = logs.New("dbSuite", 2)
+}
+
+func (su *dbSuite) Test_NewDBFrom() {
+	client, err := mongo.Connect(su.ctx, options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s/%s?authenticationDatabase=admin",
+		"test", "test", "localhost:27017", "sutando")))
+	su.Nil(err)
+	su.NotNil(client)
+	db := NewDBFromMongo(su.ctx, client, "sutando")
+	su.NotNil(db)
 }
 
 func TestDB(t *testing.T) {
