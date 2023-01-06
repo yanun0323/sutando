@@ -50,7 +50,7 @@ $ go get -u github.com/yanun0323/sutando
 
 ```
 
-#### Disconnect To MongoDB
+#### Disconnect
 ```go
     err := db.Disconnect(ctx)
 ```
