@@ -69,6 +69,17 @@ type DB interface {
 				result, err := su.db.ExecDelete(su.ctx, delete)
 	*/
 	ExecDelete(ctx context.Context, q query) (deleteResult, error)
+	/*
+		Disconnect closes sockets to the topology referenced by this Client. It will
+		shut down any monitoring goroutines, close the idle connection pool, and will
+		wait until all the in use connections have been returned to the connection
+		pool and closed before returning. If the context expires via cancellation,
+		deadline, or timeout before the in use connections have returned, the in use
+		connections will be closed, resulting in the failure of any in flight read
+		or write operations. If this method returns with no errors, all connections
+		associated with this Client have been closed.
+	*/
+	Disconnect(ctx context.Context) error
 }
 
 type sutandoDB struct {
@@ -298,4 +309,8 @@ func (s *sutandoDB) ExecDelete(ctx context.Context, q query) (deleteResult, erro
 		return q.col().DeleteOne(ctx, q.build(), &options.DeleteOptions{})
 	}
 	return q.col().DeleteMany(ctx, q.build(), &options.DeleteOptions{})
+}
+
+func (s *sutandoDB) Disconnect(ctx context.Context) error {
+	return s.client.Disconnect(ctx)
 }

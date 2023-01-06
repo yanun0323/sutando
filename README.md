@@ -50,6 +50,11 @@ $ go get -u github.com/yanun0323/sutando
 
 ```
 
+#### Disconnect To MongoDB
+```go
+    err := db.Disconnect(ctx)
+```
+
 #### Find
 ```go
     result := struct{}
