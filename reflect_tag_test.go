@@ -16,7 +16,13 @@ type testTagStruct struct {
 }
 
 func Test_getTag(t *testing.T) {
-	data := &testTagStruct{}
+	data := &testTagStruct{
+		FirstField:  "1",
+		SecondField: "2",
+		thirdField:  "3",
+		fourthField: "4",
+		FifthField:  "5",
+	}
 	elem := reflect.ValueOf(data).Elem()
 	for i := 0; i < elem.NumField(); i++ {
 		field := elem.Type().Field(i)
