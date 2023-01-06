@@ -37,6 +37,10 @@ func (su *dbSuite) SetupTest() {
 	su.l = logs.New("dbSuite", 2)
 }
 
+func TestDB(t *testing.T) {
+	suite.Run(t, new(dbSuite))
+}
+
 func (su *dbSuite) Test_NewDBFrom() {
 	client, err := mongo.Connect(su.ctx, options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s/%s?authenticationDatabase=admin",
 		"test", "test", "localhost:27017", "sutando")))
@@ -46,11 +50,23 @@ func (su *dbSuite) Test_NewDBFrom() {
 	su.NotNil(db)
 }
 
-func TestDB(t *testing.T) {
-	suite.Run(t, new(dbSuite))
+func (su *dbSuite) Test_Disconnect() {
+	db, err := NewDB(su.ctx, Conn{
+		Username:  "test",
+		Password:  "test",
+		Host:      "localhost",
+		Port:      27017,
+		DB:        "sutando",
+		AdminAuth: true,
+		Pem:       "",
+	})
+	su.Require().Nil(err)
+	su.Require().NotNil(db)
+
+	su.Nil(db.Disconnect(su.ctx))
 }
 
-func (su dbSuite) Test_CRUD() {
+func (su *dbSuite) Test_CRUD() {
 	{
 		data := mockData()
 		insOne := su.db.Collection("TestCRUD").Insert(&data)
