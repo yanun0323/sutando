@@ -280,7 +280,7 @@ func execFindOne(ctx context.Context, q query, p any) error {
 	result := q.col().FindOne(ctx, q.build())
 	err := result.Decode(p)
 	if err != nil {
-		return errors.Wrap(err, "find")
+		return err
 	}
 	return nil
 }
