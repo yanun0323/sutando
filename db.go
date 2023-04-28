@@ -153,6 +153,8 @@ func NewDB(ctx context.Context, c Connection) (DB, error) {
 		opts.SetTLSConfig(cfg)
 	}
 
+	c.SetupOption(opts)
+
 	f := false
 	opts.RetryWrites = &f
 	client, err := mongo.Connect(

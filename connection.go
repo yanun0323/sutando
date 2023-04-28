@@ -3,11 +3,14 @@ package sutando
 import (
 	"crypto/tls"
 	"fmt"
+
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Connection interface {
 	DSN(cfg *tls.Config) (string, bool) /* string: dsn, bool: isPem */
 	Database() string
+	SetupOption(*options.ClientOptions)
 }
 
 type Conn struct {
@@ -18,6 +21,8 @@ type Conn struct {
 	DB        string
 	Pem       string /* optional */
 	AdminAuth bool
+
+	OptionHandler func(*options.ClientOptions)
 }
 
 func (c Conn) DSN(cfg *tls.Config) (string, bool) {
@@ -53,4 +58,11 @@ func (c Conn) DSN(cfg *tls.Config) (string, bool) {
 
 func (c Conn) Database() string {
 	return c.DB
+}
+
+func (c Conn) SetupOption(*options.ClientOptions) {
+	if c.OptionHandler == nil {
+		return
+	}
+	c.OptionHandler(nil)
 }
