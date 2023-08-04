@@ -50,22 +50,28 @@ func TestDB(t *testing.T) {
 }
 
 func (su *dbSuite) Test_Srv() {
+	col := "test"
 	s, err := NewDB(su.ctx, Conn{
 		Username:  "test",
 		Password:  "test",
-		Host:      "sutando.com",
-		Port:      0,
-		DB:        "sutando",
-		AdminAuth: false,
-		Pem:       "",
+		Host:      "sutando.mongodb.net",
+		DB:        col,
+		AdminAuth: true,
 		Srv:       true,
 		OptionHandler: func(opt *options.ClientOptions) {
-			opt.SetConnectTimeout(time.Second)
-			opt.SetTimeout(time.Second)
+			opt.SetConnectTimeout(3 * time.Second)
+			opt.SetTimeout(3 * time.Second)
 		},
 	})
 	su.Require().NoError(err)
 	su.Require().NotNil(s)
+
+	q := s.Collection(col).Find().First()
+	var result map[string]interface{}
+	su.Require().NoError(s.ExecFind(su.ctx, q, &result))
+	for k, v := range result {
+		fmt.Printf("%s: %+v", k, v)
+	}
 }
 
 func (su *dbSuite) Test_NewDBFrom() {
