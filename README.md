@@ -1,5 +1,4 @@
-<a href="."><img height="200" src="https://raw.githubusercontent.com/yanun0323/asset/main/sutando.png?token=GHSAT0AAAAAACFQBOSGHZQSMQV6U2DHKREYZGM2GUQ"></a>
-
+<a href="."><img height="200" src="https://github.com/yanun0323/asset/blob/main/sutando.png?raw=true"></a>
 ## Requirement
 *Required go 1.18 up*
 
