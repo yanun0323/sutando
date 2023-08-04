@@ -1,13 +1,7 @@
-# Sutando
-Sutando is a simple go ORM framework for mongoDB.
+<img height="200" src="TITLE.PNG">
 
-
-## Install
+## Requirement
 *Required go 1.18 up*
-
-```shell
-$ go get -u github.com/yanun0323/sutando
-```
 
 ## Query Parameters
 
@@ -24,7 +18,15 @@ $ go get -u github.com/yanun0323/sutando
 - In
 - NotIn
 
-## Example
+## Guide
+
+### Installation
+
+```shell
+$ go get -u github.com/yanun0323/sutando
+```
+
+### Example
 
 #### Connect To MongoDB
 
