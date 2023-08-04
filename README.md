@@ -1,5 +1,5 @@
 # Sutando
-A go package encapsulate mongo-driver.
+Sutando is a simple go ORM framework for mongoDB.
 
 
 ## Install
@@ -35,10 +35,13 @@ $ go get -u github.com/yanun0323/sutando
         Username:  "example",
         Password:  "example",
         Host:      "example",
-        Port:      27017,	// leave empty if there's port in host
+        Port:      27017,	// leave blank if there's port in host
         DB:        "example",
         AdminAuth: true,
         Pem:       "",		// optional
+        OptionHandler func(client *options.ClientOptions) {
+            // do something...
+        },
     })
 
     // Using SRV URL
@@ -49,6 +52,9 @@ $ go get -u github.com/yanun0323/sutando
         DB:        "example",
         AdminAuth: true,
         Srv:       true,
+        OptionHandler func(client *options.ClientOptions) {
+            // do something...
+        },
     })
 ```
 
@@ -111,3 +117,17 @@ $ go get -u github.com/yanun0323/sutando
     client := db.GetDriver()
     db := db.GetDriverDB()
 ``` 
+
+## Changelog
+
+|Version|Description
+|:-:|:-
+|1.2.1| - Support `mongodb-srv` <br> - Fixed `Conn` OptionHandler nill pointer issue
+|1.2.0| - Added OptionHandler into `Conn` Interface
+|1.1.2| - Fixed testing structure tag issue <br> - Fixed error wrapping issue
+|1.1.1| - Added `Disconnect` function
+|1.0.4| - Fixed some testing mistakes
+|1.0.3| - Added `NewDBFromMongo` function
+|1.0.2| - Added MIT License <br> - Removed Makefile
+|1.0.1| - Fixed some testing mistakes
+|1.0.0| - Release

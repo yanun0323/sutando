@@ -96,10 +96,13 @@ Create a new mongoDB connection
 			Username:  "example",
 			Password:  "example",
 			Host:      "example",
-			Port:      27017,	// leave empty if there's port in host
+			Port:      27017,	// leave blank if there's port in host
 			DB:        "example",
 			AdminAuth: true,
 			Pem:       "",		// optional
+			OptionHandler func(client *options.ClientOptions) {
+				// do something...
+			},
 		})
 
 		// Using SRV URL
@@ -110,6 +113,9 @@ Create a new mongoDB connection
 			DB:        "example",
 			AdminAuth: true,
 			Srv:       true,
+			OptionHandler func(client *options.ClientOptions) {
+				// do something...
+			},
 		})
 
 	# --- How To Use ---
