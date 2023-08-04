@@ -69,9 +69,6 @@ func (su *dbSuite) Test_Srv() {
 	q := s.Collection(col).Find().First()
 	var result map[string]interface{}
 	su.Require().NoError(s.ExecFind(su.ctx, q, &result))
-	for k, v := range result {
-		fmt.Printf("%s: %+v", k, v)
-	}
 }
 
 func (su *dbSuite) Test_NewDBFrom() {
