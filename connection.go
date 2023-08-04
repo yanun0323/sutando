@@ -17,7 +17,7 @@ type Conn struct {
 	Username  string
 	Password  string
 	Host      string
-	Port      uint /* leave empty if you already add port in host or using srv*/
+	Port      uint /* leave blank if you already add port in host or using SRV*/
 	DB        string
 	Pem       string /* optional */
 	AdminAuth bool
