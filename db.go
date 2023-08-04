@@ -91,14 +91,25 @@ type sutandoDB struct {
 Create a new mongoDB connection
 
 	# Sample Code:
+		// Using Host and Port
 		db, err := sutando.NewDB(ctx, sutando.Conn{
 			Username:  "example",
 			Password:  "example",
-			Host:      "localhost",
+			Host:      "example",
 			Port:      27017,	// leave empty if there's port in host
 			DB:        "example",
 			AdminAuth: true,
 			Pem:       "",		// optional
+		})
+
+		// Using SRV URL
+		db, err := sutando.NewDB(ctx, sutando.Conn{
+			Username:  "example",
+			Password:  "example",
+			Host:      "example.mongo.net",
+			DB:        "example",
+			AdminAuth: true,
+			Srv:       true,
 		})
 
 	# --- How To Use ---

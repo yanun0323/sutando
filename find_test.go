@@ -8,7 +8,9 @@ import (
 )
 
 type findSuite struct {
-	dbSuite
+	baseSuite
+
+	db DB
 }
 
 func TestFind(t *testing.T) {
@@ -16,20 +18,22 @@ func TestFind(t *testing.T) {
 }
 
 func (su *findSuite) BeforeTest(suiteName, testName string) {
+	su.db = su.initDB()
 	data := mockData()
 	data.StructName = "Yanun"
 	q := su.db.Collection("find_suite").Insert(&data, &data, &data)
 	_, _, err := su.db.ExecInsert(su.ctx, q)
-	su.Require().Nil(err)
+	su.Require().NoError(err)
 }
 
 func (su *findSuite) AfterTest(suiteName, testName string) {
 	q := su.db.Collection("find_suite").Delete()
 	_, err := su.db.ExecDelete(su.ctx, q)
-	su.Require().Nil(err)
+	su.Require().NoError(err)
+	su.Require().NoError(su.db.Disconnect(su.ctx))
 }
 
-func (su findSuite) Test_Find() {
+func (su *findSuite) Test_Find() {
 	{
 		var One testStruct
 		queryOneFist := su.db.Collection("find_suite").Find().First()

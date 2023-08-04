@@ -17,17 +17,23 @@ type Conn struct {
 	Username  string
 	Password  string
 	Host      string
-	Port      uint /* leave empty if you already add port in host */
+	Port      uint /* leave blank if you already add port in host or using SRV*/
 	DB        string
 	Pem       string /* optional */
 	AdminAuth bool
+	Srv       bool
 
 	OptionHandler func(*options.ClientOptions)
 }
 
 func (c Conn) DSN(cfg *tls.Config) (string, bool) {
 	suffix := ""
-	prefix := fmt.Sprintf("mongodb://%s:%s@%s:%d/%s",
+	prefix := "mongodb:"
+	if c.Srv {
+		prefix = "mongodb+srv:"
+	}
+	dsn := fmt.Sprintf("%s//%s:%s@%s:%d/%s",
+		prefix,
 		c.Username,
 		c.Password,
 		c.Host,
@@ -35,8 +41,9 @@ func (c Conn) DSN(cfg *tls.Config) (string, bool) {
 		c.DB,
 	)
 
-	if c.Port == 0 {
-		prefix = fmt.Sprintf("mongodb://%s:%s@%s/%s",
+	if c.Srv || c.Port == 0 {
+		dsn = fmt.Sprintf("%s//%s:%s@%s/%s",
+			prefix,
 			c.Username,
 			c.Password,
 			c.Host,
@@ -53,16 +60,16 @@ func (c Conn) DSN(cfg *tls.Config) (string, bool) {
 		suffix = "?ssl=true&replicaSet=rs0&readpreference=secondaryPreferred"
 	}
 
-	return prefix + suffix, pem
+	return dsn + suffix, pem
 }
 
 func (c Conn) Database() string {
 	return c.DB
 }
 
-func (c Conn) SetupOption(*options.ClientOptions) {
+func (c Conn) SetupOption(opt *options.ClientOptions) {
 	if c.OptionHandler == nil {
 		return
 	}
-	c.OptionHandler(nil)
+	c.OptionHandler(opt)
 }
