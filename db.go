@@ -103,7 +103,7 @@ Create a new mongoDB connection
 		})
 
 		// Using SRV URL
-		srv, err := sutando.NewDB(ctx, sutando.Conn{
+		db, err := sutando.NewDB(ctx, sutando.Conn{
 			Username:  "example",
 			Password:  "example",
 			Host:      "example.mongo.net",
