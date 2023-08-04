@@ -69,6 +69,7 @@ func (su *dbSuite) Test_Srv() {
 	q := s.Collection(col).Find().First()
 	var result map[string]interface{}
 	su.Require().NoError(s.ExecFind(su.ctx, q, &result))
+	su.l.Debug(len(result))
 }
 
 func (su *dbSuite) Test_NewDBFrom() {
