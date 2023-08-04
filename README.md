@@ -122,8 +122,8 @@ $ go get -u github.com/yanun0323/sutando
 
 |Version|Description
 |:-:|:-
-|1.2.1| - Support `mongodb-srv` <br> - Fixed `Conn` OptionHandler nill pointer issue
-|1.2.0| - Added OptionHandler into `Conn` Interface
+|1.2.1| - Support `mongodb-srv` <br> - Fixed `Conn` `OptionHandler` nill pointer issue
+|1.2.0| - Added `OptionHandler` into `Conn` Interface
 |1.1.2| - Fixed testing structure tag issue <br> - Fixed error wrapping issue
 |1.1.1| - Added `Disconnect` function
 |1.0.4| - Fixed some testing mistakes
@@ -131,3 +131,7 @@ $ go get -u github.com/yanun0323/sutando
 |1.0.2| - Added MIT License <br> - Removed Makefile
 |1.0.1| - Fixed some testing mistakes
 |1.0.0| - Release
+
+## License
+
+[MIT](https://github.com/yanun0323/sutando/blob/master/LICENSE)
