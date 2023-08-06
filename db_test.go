@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -30,7 +31,7 @@ func (su *baseSuite) initDB() DB {
 		Username:  "test",
 		Password:  "test",
 		Host:      "localhost",
-		Port:      0,
+		Port:      27017,
 		DB:        "sutando",
 		AdminAuth: true,
 		Pem:       "",
@@ -43,19 +44,28 @@ func (su *baseSuite) initDB() DB {
 
 type dbSuite struct {
 	baseSuite
+
+	col string
 }
 
 func TestDB(t *testing.T) {
 	suite.Run(t, new(dbSuite))
 }
 
-func (su *dbSuite) Test_Srv() {
-	col := "test"
+func (su *dbSuite) SetupSuite() {
+	su.baseSuite.SetupSuite()
+	su.col = "db_suite"
+}
+
+func (su *dbSuite) Test_Srv_Good() {
+	if os.Getenv("TEST_SRV") != "1" {
+		return
+	}
 	s, err := NewDB(su.ctx, Conn{
 		Username:  "test",
 		Password:  "test",
 		Host:      "sutando.mongodb.net",
-		DB:        col,
+		DB:        "test",
 		AdminAuth: true,
 		Srv:       true,
 		OptionHandler: func(client *options.ClientOptions) {
@@ -66,13 +76,12 @@ func (su *dbSuite) Test_Srv() {
 	su.Require().NoError(err)
 	su.Require().NotNil(s)
 
-	q := s.Collection(col).Find().First()
 	var result map[string]interface{}
-	su.Require().NoError(s.ExecFind(su.ctx, q, &result))
+	su.Require().NoError(s.Collection(su.col).Find().First().Exec(su.ctx, &result))
 	su.l.Debug(len(result))
 }
 
-func (su *dbSuite) Test_NewDBFrom() {
+func (su *dbSuite) Test_NewDBFrom_Good() {
 	client, err := mongo.Connect(su.ctx, options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s/%s?authenticationDatabase=admin",
 		"test", "test", "localhost:27017", "sutando")))
 	su.NoError(err)
@@ -81,7 +90,7 @@ func (su *dbSuite) Test_NewDBFrom() {
 	su.NotNil(db)
 }
 
-func (su *dbSuite) Test_Disconnect() {
+func (su *dbSuite) Test_Disconnect_Good() {
 	db, err := NewDB(su.ctx, Conn{
 		Username:  "test",
 		Password:  "test",
@@ -94,21 +103,104 @@ func (su *dbSuite) Test_Disconnect() {
 	su.Require().NoError(err)
 	su.Require().NotNil(db)
 
-	su.Nil(db.Disconnect(su.ctx))
+	su.NoError(db.Disconnect(su.ctx))
 }
 
-func (su *dbSuite) Test_CRUD() {
+func (su *dbSuite) Test_CRUD_Good() {
 	db := su.initDB()
-	col := "db_suite"
 	{
 		data := mockData()
-		insOne := db.Collection(col).Insert(&data)
+		resultOne, _, err := db.Collection(su.col).Insert(&data).Exec(su.ctx)
+		su.Assert().NoError(err)
+		su.Assert().NotNil(resultOne)
+		su.l.Debug("insert one ID: ", resultOne.InsertedID)
+
+		_, resultMany, err := db.Collection(su.col).Insert(&data, &data, &data).Exec(su.ctx)
+		su.Assert().NoError(err)
+		su.Assert().NotNil(resultMany)
+		su.l.Debug("insert count: ", len(resultMany.InsertedIDs))
+
+	}
+
+	{
+		var a testStruct
+
+		su.Nil(db.Collection(su.col).Find().First().Exec(su.ctx, &a))
+		su.NotEmpty(a)
+
+		su.Error(db.Collection(su.col).Find().Exec(su.ctx, &a))
+	}
+
+	{
+		var a []testStruct
+
+		err := db.Collection(su.col).Find().Exec(su.ctx, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
+		su.l.Debug("find all count: ", len(a))
+	}
+
+	{
+		var a testStruct
+
+		err := db.Collection(su.col).Find().Equal("structName", "Yanun").First().Exec(su.ctx, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
+
+		err = db.Collection(su.col).Find().Equal("structName", "Yanun").Exec(su.ctx, &a)
+		su.Error(err)
+	}
+
+	{
+		var a []testStruct
+
+		err := db.Collection(su.col).Find().Contain("arrTest", 1, 3, 5).First().Exec(su.ctx, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
+		su.l.Debug("find contain first count: ", len(a))
+
+		err = db.Collection(su.col).Find().Contain("arrTest", 1, 3, 5).Exec(su.ctx, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
+		su.l.Debug("find contain count: ", len(a))
+	}
+
+	{
+		data := mockData()
+		data.StructName = "Vin"
+		result, err := db.Collection(su.col).UpdateWith(&data).Equal("structName", "Yanun").First().Exec(su.ctx, false)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.l.Debug("update first count: ", result.ModifiedCount)
+
+		result, err = db.Collection(su.col).UpdateWith(&data).Equal("structName", "Yanun").Exec(su.ctx, false)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.l.Debug("update count: ", result.ModifiedCount)
+	}
+
+	{
+		result, err := db.Collection(su.col).Delete().Equal("structName", "Vin").First().Exec(su.ctx)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.l.Debug("delete count: ", result.DeletedCount)
+
+		result, err = db.Collection(su.col).Delete().Equal("structName", "Vin").Exec(su.ctx)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.l.Debug("delete count: ", result.DeletedCount)
+	}
+
+	su.NoError(db.Disconnect(su.ctx))
+}
+
+func (su *dbSuite) Test_CRUD_Old_Good() {
+	db := su.initDB()
+	{
+		data := mockData()
+		insOne := db.Collection(su.col).Insert(&data)
 		resultOne, _, err := db.ExecInsert(su.ctx, insOne)
 		su.Assert().NoError(err)
 		su.Assert().NotNil(resultOne)
 		su.l.Debug("insert one ID: ", resultOne.InsertedID)
 
-		insMany := db.Collection(col).Insert(&data, &data, &data)
+		insMany := db.Collection(su.col).Insert(&data, &data, &data)
 		_, resultMany, err := db.ExecInsert(su.ctx, insMany)
 		su.Assert().NoError(err)
 		su.Assert().NotNil(resultMany)
@@ -116,20 +208,21 @@ func (su *dbSuite) Test_CRUD() {
 
 	}
 
-	var One testStruct
 	{
-		queryOneFist := db.Collection(col).Find().First()
-		su.Nil(db.ExecFind(su.ctx, queryOneFist, &One))
-		su.NotEmpty(One)
+		var a testStruct
 
-		queryOneFistFailed := db.Collection(col).Find()
-		su.Error(db.ExecFind(su.ctx, queryOneFistFailed, &One))
+		queryOneFist := db.Collection(su.col).Find().First()
+		su.Nil(db.ExecFind(su.ctx, queryOneFist, &a))
+		su.NotEmpty(a)
+
+		queryOneFistFailed := db.Collection(su.col).Find()
+		su.Error(db.ExecFind(su.ctx, queryOneFistFailed, &a))
 	}
 
 	{
 		var a []testStruct
 
-		query := db.Collection(col).Find()
+		query := db.Collection(su.col).Find()
 		err := db.ExecFind(su.ctx, query, &a)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.NotEmpty(a)
@@ -139,12 +232,12 @@ func (su *dbSuite) Test_CRUD() {
 	{
 		var a testStruct
 
-		query := db.Collection(col).Find().Equal("structName", "Yanun").First()
+		query := db.Collection(su.col).Find().Equal("structName", "Yanun").First()
 		err := db.ExecFind(su.ctx, query, &a)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.NotEmpty(a)
 
-		query = db.Collection(col).Find().Equal("structName", "Yanun")
+		query = db.Collection(su.col).Find().Equal("structName", "Yanun")
 		err = db.ExecFind(su.ctx, query, &a)
 		su.Error(err)
 	}
@@ -152,13 +245,13 @@ func (su *dbSuite) Test_CRUD() {
 	{
 		var a []testStruct
 
-		query := db.Collection(col).Find().Contain("arrTest", 1, 3, 5).First()
+		query := db.Collection(su.col).Find().Contain("arrTest", 1, 3, 5).First()
 		err := db.ExecFind(su.ctx, query, &a)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.NotEmpty(a)
 		su.l.Debug("find contain first count: ", len(a))
 
-		query = db.Collection(col).Find().Contain("arrTest", 1, 3, 5)
+		query = db.Collection(su.col).Find().Contain("arrTest", 1, 3, 5)
 		err = db.ExecFind(su.ctx, query, &a)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.NotEmpty(a)
@@ -168,26 +261,28 @@ func (su *dbSuite) Test_CRUD() {
 	{
 		data := mockData()
 		data.StructName = "Vin"
-		update := db.Collection(col).UpdateWith(&data).Equal("structName", "Yanun").First()
+		update := db.Collection(su.col).UpdateWith(&data).Equal("structName", "Yanun").First()
 		result, err := db.ExecUpdate(su.ctx, update, false)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.l.Debug("update first count: ", result.ModifiedCount)
 
-		update = db.Collection(col).UpdateWith(&data).Equal("structName", "Yanun")
+		update = db.Collection(su.col).UpdateWith(&data).Equal("structName", "Yanun")
 		result, err = db.ExecUpdate(su.ctx, update, false)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.l.Debug("update count: ", result.ModifiedCount)
 	}
 
 	{
-		query := db.Collection(col).Delete().Equal("structName", "Vin").First()
+		query := db.Collection(su.col).Delete().Equal("structName", "Vin").First()
 		result, err := db.ExecDelete(su.ctx, query)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.l.Debug("delete count: ", result.DeletedCount)
 
-		query = db.Collection(col).Delete().Equal("structName", "Vin")
+		query = db.Collection(su.col).Delete().Equal("structName", "Vin")
 		result, err = db.ExecDelete(su.ctx, query)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.l.Debug("delete count: ", result.DeletedCount)
 	}
+
+	su.NoError(db.Disconnect(su.ctx))
 }

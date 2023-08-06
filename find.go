@@ -1,102 +1,135 @@
 package sutando
 
 import (
-	"go.mongodb.org/mongo-driver/bson"
+	"context"
+	"reflect"
+
+	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type find struct {
-	coll    *mongo.Collection
-	filters []filter
-	one     bool
+	q querying
 }
 
-func newFind(collection *mongo.Collection) query {
+func newFind(collection *mongo.Collection) finding {
 	return &find{
-		coll:    collection,
-		filters: []filter{}}
-}
-
-func (f *find) build() bson.D {
-	query := make(bson.D, 0, len(f.filters))
-	for i := range f.filters {
-		e := f.filters[i].bson().(bson.E)
-		query = append(query, e)
+		q: newQuery(collection),
 	}
-	return query
 }
 
-func (f *find) col() *mongo.Collection {
-	return f.coll
-}
-
-func (f *find) Exists(key string, exists bool) query {
-	return f.appendFilters("$exists", key, exists)
-}
-
-func (f *find) And(key string, value any) query {
-	return f.appendFilters("", key, value)
-}
-
-func (f *find) Equal(key string, value any) query {
-	return f.appendFilters("$eq", key, value)
-}
-
-func (f *find) NotEqual(key string, value ...any) query {
-	return f.appendFilters("$ne", key, value...).Exists(key, true)
-}
-
-func (f *find) Greater(key string, value any) query {
-	return f.appendFilters("$gt", key, value)
-}
-
-func (f *find) GreaterOrEqual(key string, value any) query {
-	return f.appendFilters("$gte", key, value)
-}
-
-func (f *find) Less(key string, value any) query {
-	return f.appendFilters("$lt", key, value)
-}
-
-func (f *find) LessOrEqual(key string, value any) query {
-	return f.appendFilters("$lte", key, value)
-}
-
-func (f *find) Bitwise(key string, value any) query {
-	return f.appendFilters("$bitsAllSet", key, value)
-}
-
-func (f *find) Contain(key string, value ...any) query {
-	if len(value) == 0 {
-		return f
-	}
-	return f.appendFilters("$all", key, value...)
-}
-
-func (f *find) In(key string, value ...any) query {
-	if len(value) == 0 {
-		return f
-	}
-	return f.appendFilters("$in", key, value...)
-}
-
-func (f *find) NotIn(key string, value ...any) query {
-	if len(value) == 0 {
-		return f
-	}
-	return f.appendFilters("$nin", key, value...)
-}
-
-func (f *find) First() query {
-	f.one = true
+func (f *find) Exists(key string, exists bool) finding {
+	f.q.Exists(key, exists)
 	return f
 }
 
-func (f *find) isOne() bool {
-	return f.one
+func (f *find) And(key string, value any) finding {
+	f.q.And(key, value)
+	return f
 }
 
-func (f *find) appendFilters(operation, key string, value ...any) query {
-	f.filters = append(f.filters, newFilter(operation, key, value...))
+func (f *find) Equal(key string, value any) finding {
+	f.q.Equal(key, value)
 	return f
+}
+
+func (f *find) NotEqual(key string, value ...any) finding {
+	f.q.NotEqual(key, value)
+	return f
+}
+
+func (f *find) Greater(key string, value any) finding {
+	f.q.Greater(key, value)
+	return f
+}
+
+func (f *find) GreaterOrEqual(key string, value any) finding {
+	f.q.GreaterOrEqual(key, value)
+	return f
+}
+
+func (f *find) Less(key string, value any) finding {
+	f.q.Less(key, value)
+	return f
+}
+
+func (f *find) LessOrEqual(key string, value any) finding {
+	f.q.LessOrEqual(key, value)
+	return f
+}
+
+func (f *find) Bitwise(key string, value any) finding {
+	f.q.Bitwise(key, value)
+	return f
+}
+
+func (f *find) Contain(key string, value ...any) finding {
+	f.q.Contain(key, value...)
+	return f
+}
+
+func (f *find) In(key string, value ...any) finding {
+	f.q.In(key, value...)
+	return f
+}
+
+func (f *find) NotIn(key string, value ...any) finding {
+	f.q.NotIn(key, value...)
+	return f
+}
+
+func (f *find) First() finding {
+	f.q.First()
+	return f
+}
+
+func (f *find) Exec(ctx context.Context, p any) error {
+	if reflect.TypeOf(p).Kind() != reflect.Pointer {
+		return errors.New("object to find should be a pointer")
+	}
+	kind := reflect.TypeOf(p).Elem().Kind()
+	if kind == reflect.Array {
+		return errors.New("object to find cannot be an array")
+	}
+
+	if kind != reflect.Slice {
+		if !f.q.isOne() {
+			return errors.New("find too many results! use query with 'First' to find one result")
+		}
+		return f.execFindOne(ctx, p)
+	}
+
+	if !f.q.isOne() {
+		return f.execFindMany(ctx, f, p)
+	}
+
+	obj := reflect.New(reflect.TypeOf(p).Elem().Elem())
+	err := f.execFindOne(ctx, obj.Interface())
+	if err != nil {
+		return err
+	}
+	sli := reflect.Append(reflect.ValueOf(p).Elem(), obj.Elem())
+	reflect.ValueOf(p).Elem().Set(sli)
+	return nil
+}
+
+func (f *find) execFindOne(ctx context.Context, p any) error {
+	result := f.q.col().FindOne(ctx, f.q.build())
+	err := result.Decode(p)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (f *find) execFindMany(ctx context.Context, q finding, p any) error {
+	cursor, err := f.q.col().Find(ctx, f.q.build())
+	if err != nil {
+		return err
+	}
+	err = cursor.All(ctx, p)
+	if err != nil {
+		return err
+	}
+	return nil
 }

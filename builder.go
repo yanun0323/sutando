@@ -8,22 +8,24 @@ type builder struct {
 	col *mongo.Collection
 }
 
-func (b builder) Insert(p ...any) *insert {
+/*
+ */
+func (b builder) Insert(p ...any) inserting {
 	return newInsert(b.col, p...)
 }
 
-func (b builder) UpdateWith(p any) update {
+func (b builder) UpdateWith(p any) updating {
 	return newUpdate(b.col, p)
 }
 
-func (b builder) Update() update {
+func (b builder) Update() updating {
 	return newUpdate(b.col, nil)
 }
 
-func (b builder) Find() query {
+func (b builder) Find() finding {
 	return newFind(b.col)
 }
 
-func (b builder) Delete() query {
-	return newFind(b.col)
+func (b builder) Delete() deleting {
+	return newDelete(b.col)
 }

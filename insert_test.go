@@ -9,7 +9,8 @@ import (
 type insertSuite struct {
 	baseSuite
 
-	db DB
+	db  DB
+	col string
 }
 
 func TestInsert(t *testing.T) {
@@ -18,22 +19,23 @@ func TestInsert(t *testing.T) {
 
 func (su *insertSuite) BeforeTest(suiteName, testName string) {
 	su.db = su.initDB()
+	su.col = "insert_suite"
 }
 
 func (su *insertSuite) AfterTest(suiteName, testName string) {
-	q := su.db.Collection("insert_suite").Delete()
-	_, err := su.db.ExecDelete(su.ctx, q)
+	_, err := su.db.Collection(su.col).Delete().Exec(su.ctx)
 	su.Require().NoError(err)
 }
 
-func (su *insertSuite) Test_Insert() {
+func (su *insertSuite) Test_Insert_Good() {
 	data := mockData()
 	data.StructName = "Yanun"
-	insertOne := su.db.Collection("insert_suite").Insert(&data)
-	_, _, err := su.db.ExecInsert(su.ctx, insertOne)
-	su.Require().NoError(err)
 
-	insertMany := su.db.Collection("insert_suite").Insert(&data, &data, &data)
-	_, _, err = su.db.ExecInsert(su.ctx, insertMany)
+	resultOne, _, err := su.db.Collection(su.col).Insert(&data).Exec(su.ctx)
 	su.Require().NoError(err)
+	su.Require().NotNil(resultOne.InsertedID)
+
+	_, resultMany, err := su.db.Collection(su.col).Insert(&data, &data, &data).Exec(su.ctx)
+	su.Require().NoError(err)
+	su.Require().NotEmpty(resultMany.InsertedIDs)
 }
