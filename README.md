@@ -76,42 +76,36 @@ $ go get -u github.com/yanun0323/sutando
 
 #### Find
 ```go
-    result := struct{}
-    query := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).First()
-    err := db.ExecFind(ctx, query, &result)
+    resultOne := struct{}
+    err := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).First().Exec(ctx, &resultOne)
+
+    resultMany := []struct{}
+    err := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).Exec(ctx, &resultMany)
 ```
 #### Create
 ```go
-    insert := db.Collection("Collection").Insert(&obj)
-    result, _, err := db.ExecInsert(ctx, insert)
+    resultOne, _, err := db.Collection("Collection").Insert(&obj).Exec(ctx)
 
-    insertMany := db.Collection("Collection").Insert(&obj1, &obj2, &obj3)
-    _, resultMany, err := db.ExecInsert(ctx, insertMany)
+    _, resultMany, err := db.Collection("Collection").Insert(&obj1, &obj2, &obj3).Exec(ctx)
 ```
     
-#### Update with Model (Will update all fields include empty fields)
+#### Update with Model (Will update all fields including empty fields)
 ```go
-    update := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando").First()
-    result, err := db.ExecUpdate(su.ctx, updateOne, false)
+    resultOne, err := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando").First().Exec(su.ctx, false)
 
-    updateMany := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando")
-    result, err := db.ExecUpdate(su.ctx, updateMany, false)
+    resultMany, err := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando").Exec(su.ctx, false)
 ```
 #### Update with Set
 ```go
-    update := db.Collection("Collection").Update().Equal("Field", "sutando").First().Set("Field", "hello")
-    result, err := db.ExecUpdate(su.ctx, updateOne, false)
+    resultOne, err := db.Collection("Collection").Update().Equal("Field", "sutando").First().Set("Field", "hello").Exec(su.ctx, false)
 
-    updateMany := db.Collection("Collection").Update().Equal("Field", "sutando").Set("Field", "hello")
-    result, err := db.ExecUpdate(su.ctx, updateMany, false)
+    resultMany, err := db.Collection("Collection").Update().Equal("Field", "sutando").Set("Field", "hello").Exec(su.ctx, false)
 ```
 #### Delete
 ```go
-    delete := db.Collection("Collection").Delete().Equal("Field", "sutando").First()
-    result, err := db.ExecDelete(su.ctx, delete)
+    resultOne, err := db.Collection("Collection").Delete().Equal("Field", "sutando").First().Exec(su.ctx)
 
-    deleteMany := db.Collection("Collection").Delete().Equal("Field", "sutando")
-    result, err := db.ExecDelete(su.ctx, deleteMany)
+    resultMany, err := db.Collection("Collection").Delete().Equal("Field", "sutando").Exec(su.ctx)
 ```
 
 #### Use original mongo-driver instance

@@ -43,19 +43,19 @@ type DB interface {
 
 	/*
 		Deprecated after sutando v1.3.0, using code below to instead:
-			_, err := db.Collection("collectionName").Find().First().Exec(ctx, &result)
+			err := db.Collection("collectionName").Find().First().Exec(ctx, &result)
 	*/
 	ExecFind(ctx context.Context, f finding, p any) error
 
 	/*
 		Deprecated after sutando v1.3.0, using code below to instead:
-			_, err := db.Collection("collectionName").Update().Equal("Field", "sutando").Set("Field", "hello").First()
+			_, err := db.Collection("collectionName").Update().Equal("Field", "sutando").Set("Field", "hello").First().Exec(ctx, false)
 	*/
 	ExecUpdate(ctx context.Context, u updating, upsert bool) (updateResult, error)
 
 	/*
 		Deprecated after sutando v1.3.0, using code below to instead:
-			_, _, err := db.Collection("collectionName").Delete().First().Exec(ctx, nil)
+			_, err := db.Collection("collectionName").Delete().First().Exec(ctx)
 	*/
 	ExecDelete(ctx context.Context, d deleting) (deleteResult, error)
 	/*
@@ -79,64 +79,32 @@ type sutandoDB struct {
 /*
 Create a new mongoDB connection
 
-	# Sample Code:
-		// Using Host and Port
-		db, err := sutando.NewDB(ctx, sutando.Conn{
-			Username:  "example",
-			Password:  "example",
-			Host:      "example",
-			Port:      27017,	// leave blank if there's port in host
-			DB:        "example",
-			AdminAuth: true,
-			Pem:       "",		// optional
-			OptionHandler func(client *options.ClientOptions) {
-				// do something...
-			},
-		})
+	// Sample: Using Host and Port
+	db, err := sutando.NewDB(ctx, sutando.Conn{
+		Username:  "example",
+		Password:  "example",
+		Host:      "example",
+		Port:      27017,
+		DB:        "example",
+		AdminAuth: true,
+		Pem:       "",		// optional
+		OptionHandler func(client *options.ClientOptions) {
+			// do something...
+		},
+	})
 
-		// Using SRV URL
-		db, err := sutando.NewDB(ctx, sutando.Conn{
-			Username:  "example",
-			Password:  "example",
-			Host:      "example.mongo.net",
-			DB:        "example",
-			AdminAuth: true,
-			Srv:       true,
-			OptionHandler func(client *options.ClientOptions) {
-				// do something...
-			},
-		})
-
-	# --- How To Use ---
-
-	# Find:
-		result := struct{}
-		_, err := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).First().Exec(ctx, &result)
-
-	# Insert
-		insert := db.Collection("Collection").Insert(&obj)
-		result, _, err := db.ExecInsert(ctx, insert)
-
-		insertMany := db.Collection("Collection").Insert(&obj1, &obj2, &obj3)
-		_, resultMany, err := db.ExecInsert(ctx, insertMany)
-	# Update with Model
-		update := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando").First()
-		result, err := db.ExecUpdate(su.ctx, updateOne, false)
-
-		updateMany := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando")
-		result, err := db.ExecUpdate(su.ctx, updateMany, false)
-	# Update with Set
-		update := db.Collection("Collection").Update().Equal("Field", "sutando").First().Set("Field", "hello")
-		result, err := db.ExecUpdate(su.ctx, updateOne, false)
-
-		updateMany := db.Collection("Collection").Update().Equal("Field", "sutando").Set("Field", "hello")
-		result, err := db.ExecUpdate(su.ctx, updateMany, false)
-	# Delete
-		delete := db.Collection("Collection").Delete().Equal("Field", "sutando").First()
-		result, err := db.ExecDelete(su.ctx, delete)
-
-		deleteMany := db.Collection("Collection").Delete().Equal("Field", "sutando")
-		result, err := db.ExecDelete(su.ctx, deleteMany)
+	// Sample: Using SRV URL
+	db, err := sutando.NewDB(ctx, sutando.Conn{
+		Username:  "example",
+		Password:  "example",
+		Host:      "example.mongo.net",
+		DB:        "example",
+		AdminAuth: true,
+		Srv:       true,
+		OptionHandler func(client *options.ClientOptions) {
+			// do something...
+		},
+	})
 */
 func NewDB(ctx context.Context, c Connection) (DB, error) {
 	cfg := &tls.Config{
@@ -180,43 +148,11 @@ func NewDB(ctx context.Context, c Connection) (DB, error) {
 /*
 Create a mongoDB connection with an existed mongo-driver
 
-	# --- How To Use ---
-
-	# Sample Code:
-		var client *mongo.Client
-		...
-		database := "example"
-		db := sutando.NewDBFromMongo(ctx, client, database)
-
-	# Find:
-		result := struct{}
-		query := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).First()
-		err := db.ExecFind(ctx, query, &result)
-
-	# Insert
-		insert := db.Collection("Collection").Insert(&obj)
-		result, _, err := db.ExecInsert(ctx, insert)
-
-		insertMany := db.Collection("Collection").Insert(&obj1, &obj2, &obj3)
-		_, resultMany, err := db.ExecInsert(ctx, insertMany)
-	# Update with Model
-		update := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando").First()
-		result, err := db.ExecUpdate(su.ctx, updateOne, false)
-
-		updateMany := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando")
-		result, err := db.ExecUpdate(su.ctx, updateMany, false)
-	# Update with Set
-		update := db.Collection("Collection").Update().Equal("Field", "sutando").First().Set("Field", "hello")
-		result, err := db.ExecUpdate(su.ctx, updateOne, false)
-
-		updateMany := db.Collection("Collection").Update().Equal("Field", "sutando").Set("Field", "hello")
-		result, err := db.ExecUpdate(su.ctx, updateMany, false)
-	# Delete
-		delete := db.Collection("Collection").Delete().Equal("Field", "sutando").First()
-		result, err := db.ExecDelete(su.ctx, delete)
-
-		deleteMany := db.Collection("Collection").Delete().Equal("Field", "sutando")
-		result, err := db.ExecDelete(su.ctx, deleteMany)
+	// Sample:
+	var client *mongo.Client
+	...
+	database := "example"
+	db := sutando.NewDBFromMongo(ctx, client, database)
 */
 func NewDBFromMongo(ctx context.Context, client *mongo.Client, database string) DB {
 	return &sutandoDB{client, database}

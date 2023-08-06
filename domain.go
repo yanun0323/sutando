@@ -32,6 +32,11 @@ type updating interface {
 	NotIn(key string, value ...any) updating
 	First() updating
 
+	/*
+		Update key's data with input value
+
+		No works when function start with UpdateWith()
+	*/
 	Set(key string, value any) updating
 	Exec(ctx context.Context, upsert bool) (updateResult, error)
 
