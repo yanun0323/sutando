@@ -34,7 +34,7 @@ func (f *find) Equal(key string, value any) finding {
 }
 
 func (f *find) NotEqual(key string, value ...any) finding {
-	f.q.NotEqual(key, value)
+	f.q.NotEqual(key, value...)
 	return f
 }
 

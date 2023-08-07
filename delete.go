@@ -33,7 +33,7 @@ func (d *delete) Equal(key string, value any) deleting {
 }
 
 func (d *delete) NotEqual(key string, value ...any) deleting {
-	d.q.NotEqual(key, value)
+	d.q.NotEqual(key, value...)
 	return d
 }
 

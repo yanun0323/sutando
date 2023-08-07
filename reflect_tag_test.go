@@ -15,7 +15,7 @@ type testTagStruct struct {
 	FifthField  string `bson:"-"`
 }
 
-func Test_getTag(t *testing.T) {
+func TestGetTag(t *testing.T) {
 	data := &testTagStruct{
 		FirstField:  "1",
 		SecondField: "2",
@@ -27,7 +27,7 @@ func Test_getTag(t *testing.T) {
 	for i := 0; i < elem.NumField(); i++ {
 		field := elem.Type().Field(i)
 
-		label, skip := getTag(elem, field)
+		label, skip, _, _ := getTag(elem, field)
 		if skip {
 			continue
 		}
@@ -44,7 +44,7 @@ func Test_getTag(t *testing.T) {
 	}
 
 }
-func Test_firstLowerCase(t *testing.T) {
+func TestFirstLowerCase(t *testing.T) {
 	cases := []string{"firstField", "SecondField", "THIRDFIELD"}
 	for i := range cases {
 		switch i {

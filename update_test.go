@@ -19,21 +19,20 @@ func TestUpdate(t *testing.T) {
 
 func (su *updateSuite) BeforeTest(suiteName, testName string) {
 	su.db = su.initDB()
+	_, err := su.db.Collection("update_suite").Delete().Exec(su.ctx)
+	su.Require().NoError(err)
 	data := mockData()
 	data.StructName = "Yanun"
 	q := su.db.Collection("update_suite").Insert(&data, &data, &data)
-	_, _, err := su.db.ExecInsert(su.ctx, q)
+	_, _, err = su.db.ExecInsert(su.ctx, q)
 	su.Require().NoError(err)
 }
 
 func (su *updateSuite) AfterTest(suiteName, testName string) {
-	q := su.db.Collection("update_suite").Delete()
-	_, err := su.db.ExecDelete(su.ctx, q)
-	su.Require().NoError(err)
 	su.Require().NoError(su.db.Disconnect(su.ctx))
 }
 
-func (su *updateSuite) Test_Find_Good() {
+func (su *updateSuite) TestFindGood() {
 	data := mockData()
 	data.StructName = "Vin"
 	data.StructAge = 50

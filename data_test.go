@@ -8,17 +8,17 @@ import (
 )
 
 type testStruct struct {
-	StructName   string `bson:"structName"`
+	StructName   string
 	StructAge    int
 	RealBirthday time.Time
 	Ignore       int `bson:"-"`
 	primitive.M
-	InnerStruct1 testSubStruct
-	Inner2       testSubStruct
-	ArrTest      []int
-	MapTest      map[string]int
-	StructMap    map[int]testSubStruct
-	FitValue     decimal.Decimal
+	Inner     testSubStruct `bson:",inline"`
+	ArrTest   []int
+	MapTest   map[string]int
+	StructMap map[int]testSubStruct
+	FitValue  decimal.Decimal
+	Random    int64
 }
 
 type testSubStruct struct {
@@ -33,12 +33,8 @@ func mockData() testStruct {
 		RealBirthday: time.Date(1995, time.March, 23, 0, 0, 0, 0, time.Local),
 		Ignore:       10,
 		M:            primitive.M{"Hello": 123},
-		InnerStruct1: testSubStruct{
+		Inner: testSubStruct{
 			JustMyName: "inner",
-			OhTheAge:   50,
-		},
-		Inner2: testSubStruct{
-			JustMyName: "inner2",
 			OhTheAge:   10,
 		},
 		ArrTest: []int{1, 2, 3, 4, 5},
@@ -54,5 +50,6 @@ func mockData() testStruct {
 			},
 		},
 		FitValue: decimal.RequireFromString("0.03"),
+		Random:   time.Now().UnixMilli(),
 	}
 }

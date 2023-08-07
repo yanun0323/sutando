@@ -16,16 +16,36 @@ type insert struct {
 }
 
 func newInsert(collection *mongo.Collection, p ...any) inserting {
-	d := make([]bson.M, 0, len(p))
-	for i := range p {
-		if reflect.TypeOf(p[i]).Kind() != reflect.Pointer {
-			continue
-		}
-		d = append(d, bsonEncoder(p[i], reflect.TypeOf(p).Name()))
-	}
-	return &insert{
+	ins := &insert{
 		col:  collection,
-		data: d,
+		data: make([]bson.M, 0, len(p)),
+	}
+
+	name := reflect.TypeOf(p).Name()
+	for i := range p {
+		ins.handleData(p[i], name)
+	}
+
+	return ins
+}
+
+func (ins *insert) handleData(elem any, name string) {
+	rValue := reflect.ValueOf(elem)
+	rType := reflect.TypeOf(elem)
+	switch rValue.Kind() {
+	case reflect.Slice:
+		rName := rType.Name()
+		for i := 0; i < rValue.Len(); i++ {
+			ins.handleData(rValue.Index(i).Interface(), rName)
+		}
+	case reflect.Pointer:
+		ins.handleData(rValue.Elem().Interface(), name)
+	case reflect.Struct:
+		ins.data = append(ins.data, bsonEncoder(elem, name))
+	case reflect.Map, reflect.Func:
+		return
+	default:
+		return
 	}
 }
 
