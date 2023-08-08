@@ -1,6 +1,8 @@
 package sutando
 
 import (
+	"reflect"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -75,17 +77,41 @@ func (q *query) Contain(key string, value ...any) querying {
 }
 
 func (q *query) In(key string, value ...any) querying {
-	if len(value) == 0 {
+	switch len(value) {
+	case 0:
 		return q
+	case 1:
+		rv := reflect.ValueOf(value[0])
+		if rv.Kind() != reflect.Slice {
+			return q.appendFilters("$in", key, value)
+		}
+		data := make([]any, 0, rv.Len())
+		for i := 0; i < rv.Len(); i++ {
+			data = append(data, rv.Index(i).Interface())
+		}
+		return q.In(key, data...)
+	default:
+		return q.appendFilters("$in", key, value...)
 	}
-	return q.appendFilters("$in", key, value...)
 }
 
 func (q *query) NotIn(key string, value ...any) querying {
-	if len(value) == 0 {
+	switch len(value) {
+	case 0:
 		return q
+	case 1:
+		rv := reflect.ValueOf(value[0])
+		if rv.Kind() != reflect.Slice {
+			return q.appendFilters("$nin", key, value)
+		}
+		data := make([]any, 0, rv.Len())
+		for i := 0; i < rv.Len(); i++ {
+			data = append(data, rv.Index(i).Interface())
+		}
+		return q.NotIn(key, data...)
+	default:
+		return q.appendFilters("$nin", key, value...)
 	}
-	return q.appendFilters("$nin", key, value...)
 }
 
 func (q *query) First() querying {

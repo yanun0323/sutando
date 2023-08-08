@@ -42,3 +42,10 @@ Delete data
 func (b builder) Delete() deleting {
 	return newDelete(b.col)
 }
+
+/*
+For Query Test
+*/
+func (b builder) query() querying {
+	return newQuery(b.col)
+}
