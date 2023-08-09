@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -116,11 +115,12 @@ func NewDB(ctx context.Context, c Connection) (DB, error) {
 	)
 	dsn, pem := c.DSN(cfg)
 
+	reg := bson.NewRegistry()
+	reg.RegisterTypeEncoder(_TYPE_DECIMAL, coder{})
+	reg.RegisterTypeDecoder(_TYPE_DECIMAL, coder{})
+
 	opts = options.Client().ApplyURI(dsn).
-		SetRegistry((*bsoncodec.Registry)(bson.NewRegistryBuilder().
-			RegisterTypeEncoder(_TYPE_DECIMAL, coder{}).
-			RegisterTypeDecoder(_TYPE_DECIMAL, coder{}).
-			Build()))
+		SetRegistry(reg)
 
 	if pem {
 		opts.SetTLSConfig(cfg)

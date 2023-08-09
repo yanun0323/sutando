@@ -27,7 +27,7 @@ func TestGetTag(t *testing.T) {
 	for i := 0; i < elem.NumField(); i++ {
 		field := elem.Type().Field(i)
 
-		label, skip, _, _ := getTag(elem, field)
+		label, skip, _ := getTag(elem, field)
 		if skip {
 			continue
 		}

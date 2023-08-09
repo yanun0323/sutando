@@ -2,23 +2,27 @@ package sutando
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 
 	"github.com/pkg/errors"
+	"github.com/yanun0323/pkg/logs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type insert struct {
-	col  *mongo.Collection
-	data []bson.M
+	col     *mongo.Collection
+	data    []bson.M
+	encoder bsonEncoder
 }
 
-func newInsert(collection *mongo.Collection, p ...any) inserting {
+func newInsert(collection *mongo.Collection, encoder bsonEncoder, p ...any) inserting {
 	ins := &insert{
-		col:  collection,
-		data: make([]bson.M, 0, len(p)),
+		col:     collection,
+		data:    make([]bson.M, 0, len(p)),
+		encoder: encoder,
 	}
 
 	name := reflect.TypeOf(p).Name()
@@ -41,7 +45,7 @@ func (ins *insert) handleData(elem any, name string) {
 	case reflect.Pointer:
 		ins.handleData(rValue.Elem().Interface(), name)
 	case reflect.Struct:
-		ins.data = append(ins.data, bsonEncoder(elem, name))
+		ins.data = append(ins.data, ins.encoder.Encode(elem, name))
 	case reflect.Map, reflect.Func:
 		return
 	default:
@@ -53,6 +57,7 @@ func (ins *insert) build() []any {
 	result := make([]any, 0, len(ins.data))
 	for i := range ins.data {
 		result = append(result, ins.data[i])
+		logs.Get(context.Background()).Warn(fmt.Printf("%+v\n", ins.data[i]))
 	}
 	return result
 }

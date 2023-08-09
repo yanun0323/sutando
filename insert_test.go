@@ -20,11 +20,12 @@ func TestInsert(t *testing.T) {
 func (su *insertSuite) BeforeTest(suiteName, testName string) {
 	su.db = su.initDB()
 	su.col = "insert_suite"
+	_, err := su.db.Collection(su.col).Delete().Exec(su.ctx)
+	su.Require().NoError(err)
 }
 
 func (su *insertSuite) AfterTest(suiteName, testName string) {
-	_, err := su.db.Collection(su.col).Delete().Exec(su.ctx)
-	su.Require().NoError(err)
+	su.Require().NoError(su.db.Disconnect(su.ctx))
 }
 
 func (su *insertSuite) TestInsertGood() {
@@ -46,4 +47,16 @@ func (su *insertSuite) TestInsertGood() {
 	su.Require().NoError(err)
 	su.Require().NotEmpty(resultMany.InsertedIDs)
 	su.T().Log(resultMany.InsertedIDs)
+
+	{
+		resultOne, _, err := su.db.Collection(su.col).Insert(_defaultSettings).Exec(su.ctx)
+		su.Require().NoError(err)
+		su.Require().NotNil(resultOne.InsertedID)
+		su.T().Log(resultOne.InsertedID)
+
+		_, resultMany, err := su.db.Collection(su.col).Insert(_defaultSettings, _defaultSettings, _defaultSettings).Exec(su.ctx)
+		su.Require().NoError(err)
+		su.Require().NotEmpty(resultMany.InsertedIDs)
+		su.T().Log(resultMany.InsertedIDs)
+	}
 }

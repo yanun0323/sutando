@@ -15,10 +15,10 @@ type update struct {
 	set  bson.M
 }
 
-func newUpdate(collection *mongo.Collection, p any) updating {
+func newUpdate(collection *mongo.Collection, encoder bsonEncoder, p any) updating {
 	var d bson.M = nil
 	if p != nil {
-		d = bsonEncoder(p, reflect.TypeOf(p).Name())
+		d = encoder.Encode(p, reflect.TypeOf(p).Name())
 	}
 	return &update{
 		q:    newQuery(collection),

@@ -117,7 +117,7 @@ func (f *find) execFindOne(ctx context.Context, p any) error {
 	result := f.q.col().FindOne(ctx, f.q.build())
 	err := result.Decode(p)
 	if err != nil {
-		return err
+		return errors.Errorf("decode, err: %+v", err)
 	}
 	return nil
 }
@@ -125,11 +125,11 @@ func (f *find) execFindOne(ctx context.Context, p any) error {
 func (f *find) execFindMany(ctx context.Context, q finding, p any) error {
 	cursor, err := f.q.col().Find(ctx, f.q.build())
 	if err != nil {
-		return err
+		return errors.Errorf("find, err: %+v", err)
 	}
 	err = cursor.All(ctx, p)
 	if err != nil {
-		return err
+		return errors.Errorf("cursor decode, err: %+v", err)
 	}
 	return nil
 }

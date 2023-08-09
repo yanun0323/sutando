@@ -9,24 +9,31 @@ type builder struct {
 }
 
 /*
+Set Custom Encode Types/Structure
+*/
+func (b builder) SetCustomEncodeTypes() *builder {
+	return &b
+}
+
+/*
 Insert data
 */
 func (b builder) Insert(p ...any) inserting {
-	return newInsert(b.col, p...)
+	return newInsert(b.col, newBsonEncoder(), p...)
 }
 
 /*
 Update data with model (Will update all fields including empty fields)
 */
 func (b builder) UpdateWith(p any) updating {
-	return newUpdate(b.col, p)
+	return newUpdate(b.col, newBsonEncoder(), p)
 }
 
 /*
 Update data with set
 */
 func (b builder) Update() updating {
-	return newUpdate(b.col, nil)
+	return newUpdate(b.col, newBsonEncoder(), nil)
 }
 
 /*

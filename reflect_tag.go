@@ -3,26 +3,20 @@ package sutando
 import (
 	"reflect"
 	"strings"
-
-	"github.com/shopspring/decimal"
 )
 
 const (
-	_TAG_KEY          string = "bson"
-	_TAG_INLINE       string = "inline"
-	_TAG_OMITEMPTY    string = "omitempty"
-	_TAG_IGNORE_VALUE string = "-"
+	_TAG_KEY       string = "bson"
+	_TAG_OMITEMPTY string = "omitempty"
+	_TAG_IGNORE    string = "-"
+	_TAG_ID        string = "_id"
 )
 
-var (
-	_TYPE_DECIMAL = reflect.TypeOf(decimal.Decimal{})
-)
-
-func getTag(v reflect.Value, field reflect.StructField) (label string, skip bool, inline bool, omitempty bool) {
+func getTag(v reflect.Value, field reflect.StructField) (label string, skip bool, omitempty bool) {
 	tags := strings.Split(field.Tag.Get(_TAG_KEY), ",")
 	label = tags[0]
-	if label == _TAG_IGNORE_VALUE {
-		return "", true, false, false
+	if label == _TAG_IGNORE || label == _TAG_ID {
+		return "", true, false
 	}
 
 	if len(label) == 0 {
@@ -30,15 +24,14 @@ func getTag(v reflect.Value, field reflect.StructField) (label string, skip bool
 	}
 
 	if len(tags) == 1 {
-		return label, false, false, false
+		return label, false, false
 	}
 
 	for _, tag := range tags[1:] {
-		inline = inline || tag == _TAG_INLINE
 		omitempty = omitempty || tag == _TAG_OMITEMPTY
 	}
 
-	return label, false, inline, omitempty
+	return label, false, omitempty
 }
 
 func firstLowerCase(s string) string {
