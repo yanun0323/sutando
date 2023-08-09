@@ -8,22 +8,51 @@ type builder struct {
 	col *mongo.Collection
 }
 
-func (b builder) Insert(p ...any) *insert {
-	return newInsert(b.col, p...)
+/*
+Set Custom Encode Types/Structure
+*/
+func (b builder) SetCustomEncodeTypes() *builder {
+	return &b
 }
 
-func (b builder) UpdateWith(p any) update {
-	return newUpdate(b.col, p)
+/*
+Insert data
+*/
+func (b builder) Insert(p ...any) inserting {
+	return newInsert(b.col, newBsonEncoder(), p...)
 }
 
-func (b builder) Update() update {
-	return newUpdate(b.col, nil)
+/*
+Update data with model (Will update all fields including empty fields)
+*/
+func (b builder) UpdateWith(p any) updating {
+	return newUpdate(b.col, newBsonEncoder(), p)
 }
 
-func (b builder) Find() query {
+/*
+Update data with set
+*/
+func (b builder) Update() updating {
+	return newUpdate(b.col, newBsonEncoder(), nil)
+}
+
+/*
+Find data
+*/
+func (b builder) Find() finding {
 	return newFind(b.col)
 }
 
-func (b builder) Delete() query {
-	return newFind(b.col)
+/*
+Delete data
+*/
+func (b builder) Delete() deleting {
+	return newDelete(b.col)
+}
+
+/*
+For Query Test
+*/
+func (b builder) query() querying {
+	return newQuery(b.col)
 }

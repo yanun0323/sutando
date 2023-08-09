@@ -59,6 +59,27 @@ $ go get -u github.com/yanun0323/sutando
     })
 ```
 
+- Model Declaration
+```go
+    // Supported
+    type Element struct {
+        FirstName string                                // 'firstName' as mongo db field key 
+        lastName string                                 // 'lastName' as mongo db field key
+        Healthy bool                `bson:"-"`          // using `bson:"-"` tag to ignore this field
+        Children []string           `bson:",omitempty"` // using `bson:",omitempty"` tag to ignore this field when it's empty
+        Career CustomStruct         `bson:",inline"`    // using `bson:",inline"` tag to parse the structure and make structure bson tag works
+        Hobbies map[string]string
+        Live time.Time
+        Salary decimal.Decimal
+    }
+
+    // Unsupported
+    type ElementUnsupported struct {
+        Career1 CustomStruct `bson:,inline`
+        Career2 CustomStruct `bson:,inline`   // cause duplicate key issue in mongo
+    }
+```
+
 - Use an exist connection
 ```go
     var client *mongo.Client
@@ -75,42 +96,36 @@ $ go get -u github.com/yanun0323/sutando
 
 #### Find
 ```go
-    result := struct{}
-    query := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).First()
-    err := db.ExecFind(ctx, query, &result)
+    resultOne := struct{}
+    err := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).First().Exec(ctx, &resultOne)
+
+    resultMany := []struct{}
+    err := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).Exec(ctx, &resultMany)
 ```
 #### Create
 ```go
-    insert := db.Collection("Collection").Insert(&obj)
-    result, _, err := db.ExecInsert(ctx, insert)
+    resultOne, _, err := db.Collection("Collection").Insert(&obj).Exec(ctx)
 
-    insertMany := db.Collection("Collection").Insert(&obj1, &obj2, &obj3)
-    _, resultMany, err := db.ExecInsert(ctx, insertMany)
+    _, resultMany, err := db.Collection("Collection").Insert(&obj1, &obj2, &obj3).Exec(ctx)
 ```
     
-#### Update with Model (Will update all fields include empty fields)
+#### Update with Model (Will update all fields including empty fields)
 ```go
-    update := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando").First()
-    result, err := db.ExecUpdate(su.ctx, updateOne, false)
+    resultOne, err := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando").First().Exec(su.ctx, false)
 
-    updateMany := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando")
-    result, err := db.ExecUpdate(su.ctx, updateMany, false)
+    resultMany, err := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando").Exec(su.ctx, false)
 ```
 #### Update with Set
 ```go
-    update := db.Collection("Collection").Update().Equal("Field", "sutando").First().Set("Field", "hello")
-    result, err := db.ExecUpdate(su.ctx, updateOne, false)
+    resultOne, err := db.Collection("Collection").Update().Equal("Field", "sutando").First().Set("Field", "hello").Exec(su.ctx, false)
 
-    updateMany := db.Collection("Collection").Update().Equal("Field", "sutando").Set("Field", "hello")
-    result, err := db.ExecUpdate(su.ctx, updateMany, false)
+    resultMany, err := db.Collection("Collection").Update().Equal("Field", "sutando").Set("Field", "hello").Exec(su.ctx, false)
 ```
 #### Delete
 ```go
-    delete := db.Collection("Collection").Delete().Equal("Field", "sutando").First()
-    result, err := db.ExecDelete(su.ctx, delete)
+    resultOne, err := db.Collection("Collection").Delete().Equal("Field", "sutando").First().Exec(su.ctx)
 
-    deleteMany := db.Collection("Collection").Delete().Equal("Field", "sutando")
-    result, err := db.ExecDelete(su.ctx, deleteMany)
+    resultMany, err := db.Collection("Collection").Delete().Equal("Field", "sutando").Exec(su.ctx)
 ```
 
 #### Use original mongo-driver instance
@@ -123,6 +138,7 @@ $ go get -u github.com/yanun0323/sutando
 
 |Version|Description
 |:-:|:-
+|1.3.0| - Added `Execute Chain` <br> - Fixed error when input only one slice in insert function <br> - Fixed error when input only one param/slice in In/NotIn function <br> - Fixed `bson` `omitempty & inline` supported <br> - Plan to remove db execute function in version 1.4.X
 |1.2.1| - Support `mongodb-srv` <br> - Fixed `Conn` `OptionHandler` nill pointer issue
 |1.2.0| - Added `OptionHandler` into `Conn` Interface
 |1.1.2| - Fixed testing structure tag issue <br> - Fixed error wrapping issue

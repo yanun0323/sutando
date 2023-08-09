@@ -10,45 +10,72 @@ import (
 type findSuite struct {
 	baseSuite
 
-	db DB
+	db  DB
+	col string
 }
 
 func TestFind(t *testing.T) {
 	suite.Run(t, new(findSuite))
 }
 
+func (su *findSuite) SetupSuite() {
+	su.baseSuite.SetupSuite()
+	su.col = "find_suite"
+}
+
 func (su *findSuite) BeforeTest(suiteName, testName string) {
 	su.db = su.initDB()
 	data := mockData()
 	data.StructName = "Yanun"
-	q := su.db.Collection("find_suite").Insert(&data, &data, &data)
-	_, _, err := su.db.ExecInsert(su.ctx, q)
+	_, _, err := su.db.Collection(su.col).Insert(&data, &data, &data).Exec(su.ctx)
 	su.Require().NoError(err)
 }
 
 func (su *findSuite) AfterTest(suiteName, testName string) {
-	q := su.db.Collection("find_suite").Delete()
-	_, err := su.db.ExecDelete(su.ctx, q)
+	_, err := su.db.Collection(su.col).Delete().Exec(su.ctx)
 	su.Require().NoError(err)
 	su.Require().NoError(su.db.Disconnect(su.ctx))
 }
 
-func (su *findSuite) Test_Find() {
-	{
-		var One testStruct
-		queryOneFist := su.db.Collection("find_suite").Find().First()
-		su.Nil(su.db.ExecFind(su.ctx, queryOneFist, &One))
-		su.NotEmpty(One)
+func (su *findSuite) TestFindGood() {
+	col := su.db.Collection(su.col)
 
-		queryOneFistFailed := su.db.Collection("find_suite").Find()
-		su.Error(su.db.ExecFind(su.ctx, queryOneFistFailed, &One))
+	{
+		var a testStruct
+		su.NoError(col.Find().First().Exec(su.ctx, &a))
+		su.NotEmpty(a)
+
+		su.NoError(col.Find().First().Exec(su.ctx, &a))
 	}
 
 	{
 		var a []testStruct
 
-		query := su.db.Collection("find_suite").Find()
-		err := su.db.ExecFind(su.ctx, query, &a)
+		err := col.Find().Exec(su.ctx, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
+		su.Equal(3, len(a))
+
+		su.NoError(col.Find().First().Exec(su.ctx, &a))
+	}
+
+	{
+		var a testStruct
+
+		err := col.Find().Equal("structName", "Yanun").First().Exec(su.ctx, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
+	}
+
+	{
+		var a []testStruct
+
+		err := col.Find().Contain("arrTest", 1, 3, 5).First().Exec(su.ctx, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
+		su.Equal(1, len(a))
+
+		err = col.Find().Contain("arrTest", 1, 3, 5).Exec(su.ctx, &a)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.NotEmpty(a)
 		su.Equal(3, len(a))
@@ -56,30 +83,8 @@ func (su *findSuite) Test_Find() {
 
 	{
 		var a testStruct
+		su.Error(col.Find().Exec(su.ctx, &a))
 
-		query := su.db.Collection("find_suite").Find().Equal("structName", "Yanun").First()
-		err := su.db.ExecFind(su.ctx, query, &a)
-		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
-		su.NotEmpty(a)
-
-		query = su.db.Collection("find_suite").Find().Equal("structName", "Yanun")
-		err = su.db.ExecFind(su.ctx, query, &a)
-		su.Error(err)
-	}
-
-	{
-		var a []testStruct
-
-		query := su.db.Collection("find_suite").Find().Contain("arrTest", 1, 3, 5).First()
-		err := su.db.ExecFind(su.ctx, query, &a)
-		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
-		su.NotEmpty(a)
-		su.Equal(1, len(a))
-
-		query = su.db.Collection("find_suite").Find().Contain("arrTest", 1, 3, 5)
-		err = su.db.ExecFind(su.ctx, query, &a)
-		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
-		su.NotEmpty(a)
-		su.Equal(3, len(a))
+		su.Error(col.Find().Equal("structName", "Yanun").Exec(su.ctx, &a))
 	}
 }

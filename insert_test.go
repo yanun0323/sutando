@@ -9,7 +9,8 @@ import (
 type insertSuite struct {
 	baseSuite
 
-	db DB
+	db  DB
+	col string
 }
 
 func TestInsert(t *testing.T) {
@@ -18,22 +19,44 @@ func TestInsert(t *testing.T) {
 
 func (su *insertSuite) BeforeTest(suiteName, testName string) {
 	su.db = su.initDB()
+	su.col = "insert_suite"
+	_, err := su.db.Collection(su.col).Delete().Exec(su.ctx)
+	su.Require().NoError(err)
 }
 
 func (su *insertSuite) AfterTest(suiteName, testName string) {
-	q := su.db.Collection("insert_suite").Delete()
-	_, err := su.db.ExecDelete(su.ctx, q)
-	su.Require().NoError(err)
+	su.Require().NoError(su.db.Disconnect(su.ctx))
 }
 
-func (su *insertSuite) Test_Insert() {
+func (su *insertSuite) TestInsertGood() {
 	data := mockData()
 	data.StructName = "Yanun"
-	insertOne := su.db.Collection("insert_suite").Insert(&data)
-	_, _, err := su.db.ExecInsert(su.ctx, insertOne)
-	su.Require().NoError(err)
 
-	insertMany := su.db.Collection("insert_suite").Insert(&data, &data, &data)
-	_, _, err = su.db.ExecInsert(su.ctx, insertMany)
+	resultOne, _, err := su.db.Collection(su.col).Insert(&data).Exec(su.ctx)
 	su.Require().NoError(err)
+	su.Require().NotNil(resultOne.InsertedID)
+	su.T().Log(resultOne.InsertedID)
+
+	_, resultMany, err := su.db.Collection(su.col).Insert(&data, &data, &data).Exec(su.ctx)
+	su.Require().NoError(err)
+	su.Require().NotEmpty(resultMany.InsertedIDs)
+	su.T().Log(resultMany.InsertedIDs)
+
+	dataSlice := []testStruct{data, data, data}
+	_, resultMany, err = su.db.Collection(su.col).Insert(dataSlice).Exec(su.ctx)
+	su.Require().NoError(err)
+	su.Require().NotEmpty(resultMany.InsertedIDs)
+	su.T().Log(resultMany.InsertedIDs)
+
+	{
+		resultOne, _, err := su.db.Collection(su.col).Insert(_defaultSettings).Exec(su.ctx)
+		su.Require().NoError(err)
+		su.Require().NotNil(resultOne.InsertedID)
+		su.T().Log(resultOne.InsertedID)
+
+		_, resultMany, err := su.db.Collection(su.col).Insert(_defaultSettings, _defaultSettings, _defaultSettings).Exec(su.ctx)
+		su.Require().NoError(err)
+		su.Require().NotEmpty(resultMany.InsertedIDs)
+		su.T().Log(resultMany.InsertedIDs)
+	}
 }

@@ -19,46 +19,40 @@ func TestUpdate(t *testing.T) {
 
 func (su *updateSuite) BeforeTest(suiteName, testName string) {
 	su.db = su.initDB()
+	_, err := su.db.Collection("update_suite").Delete().Exec(su.ctx)
+	su.Require().NoError(err)
 	data := mockData()
 	data.StructName = "Yanun"
 	q := su.db.Collection("update_suite").Insert(&data, &data, &data)
-	_, _, err := su.db.ExecInsert(su.ctx, q)
+	_, _, err = su.db.ExecInsert(su.ctx, q)
 	su.Require().NoError(err)
 }
 
 func (su *updateSuite) AfterTest(suiteName, testName string) {
-	q := su.db.Collection("update_suite").Delete()
-	_, err := su.db.ExecDelete(su.ctx, q)
-	su.Require().NoError(err)
 	su.Require().NoError(su.db.Disconnect(su.ctx))
 }
 
-func (su *updateSuite) Test_Find() {
+func (su *updateSuite) TestFindGood() {
 	data := mockData()
 	data.StructName = "Vin"
 	data.StructAge = 50
-	updateOneWithModel := su.db.Collection("update_suite").UpdateWith(&data).Equal("structName", "Yanun").First()
-	result, err := su.db.ExecUpdate(su.ctx, updateOneWithModel, false)
+	result, err := su.db.Collection("update_suite").UpdateWith(&data).Equal("structName", "Yanun").First().Exec(su.ctx, false)
 	su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 	su.Equal(int64(1), result.ModifiedCount)
 
-	updateManyWithModel := su.db.Collection("update_suite").UpdateWith(&data).Equal("structName", "Yanun")
-	result, err = su.db.ExecUpdate(su.ctx, updateManyWithModel, false)
+	result, err = su.db.Collection("update_suite").UpdateWith(&data).Equal("structName", "Yanun").Exec(su.ctx, false)
 	su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 	su.Equal(int64(2), result.ModifiedCount)
 
-	updateOne := su.db.Collection("update_suite").Update().Equal("structName", "Vin").Set("structName", "Yanun").First()
-	result, err = su.db.ExecUpdate(su.ctx, updateOne, false)
+	result, err = su.db.Collection("update_suite").Update().Equal("structName", "Vin").Set("structName", "Yanun").First().Exec(su.ctx, false)
 	su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 	su.Equal(int64(1), result.ModifiedCount)
 
-	updateMany := su.db.Collection("update_suite").Update().Equal("structName", "Vin").Set("structName", "Yanun")
-	result, err = su.db.ExecUpdate(su.ctx, updateMany, false)
+	result, err = su.db.Collection("update_suite").Update().Equal("structName", "Vin").Set("structName", "Yanun").Exec(su.ctx, false)
 	su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 	su.Equal(int64(2), result.ModifiedCount)
 
 	d := testStruct{}
-	q := su.db.Collection("update_suite").Find().Equal("structAge", 50).First()
-	su.Require().Nil(su.db.ExecFind(su.ctx, q, &d))
+	su.Require().Nil(su.db.Collection("update_suite").Find().Equal("structAge", 50).First().Exec(su.ctx, &d))
 	su.Equal(50, d.StructAge)
 }
