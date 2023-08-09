@@ -67,16 +67,10 @@ $ go get -u github.com/yanun0323/sutando
         lastName string                                 // 'lastName' as mongo db field key
         Healthy bool                `bson:"-"`          // using `bson:"-"` tag to ignore this field
         Children []string           `bson:",omitempty"` // using `bson:",omitempty"` tag to ignore this field when it's empty
-        Career CustomStruct         `bson:",inline"`    // using `bson:",inline"` tag to parse the structure and make structure bson tag works
+        CareerPlan CustomStruct                         // 'careerPlan' as mongo db field key  works
         Hobbies map[string]string
         Live time.Time
         Salary decimal.Decimal
-    }
-
-    // Unsupported
-    type ElementUnsupported struct {
-        Career1 CustomStruct `bson:,inline`
-        Career2 CustomStruct `bson:,inline`   // cause duplicate key issue in mongo
     }
 ```
 
@@ -138,7 +132,7 @@ $ go get -u github.com/yanun0323/sutando
 
 |Version|Description
 |:-:|:-
-|1.3.0| - Added `Execute Chain` <br> - Fixed error when input only one slice in insert function <br> - Fixed error when input only one param/slice in In/NotIn function <br> - Fixed `bson` `omitempty & inline` supported <br> - Plan to remove db execute function in version 1.4.X
+|1.3.0| - Added `Execute Chain` <br> - Fixed error when input only one slice in insert function <br> - Fixed error when input only one param/slice in In/NotIn function <br> - Fixed `bson` `omitempty & inline` supported <br> - Fixed embed structure lowercase Name issue <br> - Fixed map structure value lowercase Name issue <br> - Fixed array structure value lowercase Name issue <br> - Plan to remove db execute function in version 1.4.X
 |1.2.1| - Support `mongodb-srv` <br> - Fixed `Conn` `OptionHandler` nill pointer issue
 |1.2.0| - Added `OptionHandler` into `Conn` Interface
 |1.1.2| - Fixed testing structure tag issue <br> - Fixed error wrapping issue
