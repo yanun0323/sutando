@@ -130,7 +130,7 @@ func (su *dbSuite) TestCRUDGood() {
 	{
 		var a testStruct
 
-		su.Nil(db.Collection(su.col).Find().First().Exec(su.ctx, &a))
+		su.Nil(db.Collection(su.col).Find().Equal("structName", "Yanun").First().Exec(su.ctx, &a))
 		su.NotEmpty(a)
 
 		su.Error(db.Collection(su.col).Find().Exec(su.ctx, &a))
@@ -190,6 +190,25 @@ func (su *dbSuite) TestCRUDGood() {
 		result, err = db.Collection(su.col).Delete().Equal("structName", "Vin").Exec(su.ctx)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.T().Log("delete count: ", result.DeletedCount)
+	}
+
+	{
+		resultOne, _, err := db.Collection(su.col).Insert(_defaultSettings).Exec(su.ctx)
+		su.NoError(err)
+		su.NotEmpty(resultOne.InsertedID)
+	}
+
+	{
+		var a Setting
+		err := db.Collection(su.col).Find().Equal("exchangeSettings.OkCoin.buyEnable", true).First().Exec(su.ctx, &a)
+		su.NoError(err)
+		su.NotZero(a)
+	}
+
+	{
+		result, err := db.Collection(su.col).Delete().Equal("exchangeSettings.OkCoin.sellEnable", true).Exec(su.ctx)
+		su.NoError(err)
+		su.NotZero(result.DeletedCount)
 	}
 
 	su.checkEmpty(su.col)

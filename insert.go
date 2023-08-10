@@ -2,11 +2,9 @@ package sutando
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 
 	"github.com/pkg/errors"
-	"github.com/yanun0323/pkg/logs"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -57,7 +55,6 @@ func (ins *insert) build() []any {
 	result := make([]any, 0, len(ins.data))
 	for i := range ins.data {
 		result = append(result, ins.data[i])
-		logs.Get(context.Background()).Warn(fmt.Printf("%+v\n", ins.data[i]))
 	}
 	return result
 }

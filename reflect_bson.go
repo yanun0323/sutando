@@ -1,13 +1,11 @@
 package sutando
 
 import (
-	"context"
 	"reflect"
 	"time"
 	"unsafe"
 
 	"github.com/shopspring/decimal"
-	"github.com/yanun0323/pkg/logs"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -72,7 +70,6 @@ func (e bsonEncoder) encode(p any, key string) any {
 			field := elem.Type().Field(i)
 
 			label, skip, omitempty := getTag(elem, field)
-			logs.Get(context.Background()).Warnf("%s : %s", field.Name, label)
 			if skip {
 				continue
 			}
