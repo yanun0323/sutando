@@ -65,6 +65,7 @@ $ go get -u github.com/yanun0323/sutando
     type Element struct {
         FirstName string                                // 'firstName' as mongo db field key 
         lastName string                                 // 'lastName' as mongo db field key
+        Nickname bool               `bson:"nick_name"`  // using `bson:"xxx"` tag to assign field key to 'xxx'
         Healthy bool                `bson:"-"`          // using `bson:"-"` tag to ignore this field
         Children []string           `bson:",omitempty"` // using `bson:",omitempty"` tag to ignore this field when it's empty
         CareerPlan CustomStruct                         // 'careerPlan' as mongo db field key  works

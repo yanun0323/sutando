@@ -87,7 +87,7 @@ Create a new mongoDB connection
 		DB:        "example",
 		AdminAuth: true,
 		Pem:       "",		// optional
-		OptionHandler func(client *options.ClientOptions) {
+		OptionHandler: func(client *options.ClientOptions) {
 			// do something...
 		},
 	})
@@ -98,9 +98,8 @@ Create a new mongoDB connection
 		Password:  "example",
 		Host:      "example.mongo.net",
 		DB:        "example",
-		AdminAuth: true,
 		Srv:       true,
-		OptionHandler func(client *options.ClientOptions) {
+		OptionHandler: func(client *options.ClientOptions) {
 			// do something...
 		},
 	})
