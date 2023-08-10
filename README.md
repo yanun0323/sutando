@@ -133,6 +133,7 @@ $ go get -u github.com/yanun0323/sutando
 
 |Version|Description
 |:-:|:-
+|1.3.1| - Renamed `OptionHandler` to `ClientOptionsHandler` <br> - Renamed `SetupOption` to `SetupClientOptions`
 |1.3.0| - Added `Execute Chain` <br> - Fixed error when input only one slice in insert function <br> - Fixed error when input only one param/slice in In/NotIn function <br> - Fixed `bson` `omitempty` supported <br> - Fixed embed structure lowercase Name issue <br> - Fixed map structure value lowercase Name issue <br> - Fixed array structure value lowercase Name issue <br> - Plan to remove db execute function in version 1.4.X
 |1.2.1| - Support `mongodb-srv` <br> - Fixed `Conn` `ClientOptionsHandler` nill pointer issue
 |1.2.0| - Added `ClientOptionsHandler` into `Conn` Interface
