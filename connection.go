@@ -10,7 +10,7 @@ import (
 type Connection interface {
 	DSN(cfg *tls.Config) (string, bool) /* string: dsn, bool: isPem */
 	Database() string
-	SetupOption(*options.ClientOptions)
+	SetupClientOptions(*options.ClientOptions)
 }
 
 type Conn struct {
@@ -23,7 +23,7 @@ type Conn struct {
 	AdminAuth bool
 	Srv       bool
 
-	OptionHandler func(*options.ClientOptions)
+	ClientOptionsHandler func(*options.ClientOptions)
 }
 
 func (c Conn) DSN(cfg *tls.Config) (string, bool) {
@@ -70,9 +70,9 @@ func (c Conn) Database() string {
 	return c.DB
 }
 
-func (c Conn) SetupOption(opt *options.ClientOptions) {
-	if c.OptionHandler == nil {
+func (c Conn) SetupClientOptions(opt *options.ClientOptions) {
+	if c.ClientOptionsHandler == nil {
 		return
 	}
-	c.OptionHandler(opt)
+	c.ClientOptionsHandler(opt)
 }

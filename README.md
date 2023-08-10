@@ -40,7 +40,7 @@ $ go get -u github.com/yanun0323/sutando
         DB:        "example",
         AdminAuth: true,
         Pem:       "",		// optional
-        OptionHandler func(client *options.ClientOptions) {
+        ClientOptionsHandler func(opts *options.ClientOptions) {
             // do something...
         },
     })
@@ -53,7 +53,7 @@ $ go get -u github.com/yanun0323/sutando
         DB:        "example",
         AdminAuth: true,
         Srv:       true,
-        OptionHandler func(client *options.ClientOptions) {
+        ClientOptionsHandler func(opts *options.ClientOptions) {
             // do something...
         },
     })
@@ -134,8 +134,8 @@ $ go get -u github.com/yanun0323/sutando
 |Version|Description
 |:-:|:-
 |1.3.0| - Added `Execute Chain` <br> - Fixed error when input only one slice in insert function <br> - Fixed error when input only one param/slice in In/NotIn function <br> - Fixed `bson` `omitempty` supported <br> - Fixed embed structure lowercase Name issue <br> - Fixed map structure value lowercase Name issue <br> - Fixed array structure value lowercase Name issue <br> - Plan to remove db execute function in version 1.4.X
-|1.2.1| - Support `mongodb-srv` <br> - Fixed `Conn` `OptionHandler` nill pointer issue
-|1.2.0| - Added `OptionHandler` into `Conn` Interface
+|1.2.1| - Support `mongodb-srv` <br> - Fixed `Conn` `ClientOptionsHandler` nill pointer issue
+|1.2.0| - Added `ClientOptionsHandler` into `Conn` Interface
 |1.1.2| - Fixed testing structure tag issue <br> - Fixed error wrapping issue
 |1.1.1| - Added `Disconnect` function
 |1.0.4| - Fixed some testing mistakes

@@ -20,9 +20,9 @@ func Test(t *testing.T) {
 		Port:      27017,
 		DB:        "sutando",
 		AdminAuth: true,
-		OptionHandler: func(client *options.ClientOptions) {
-			client.SetConnectTimeout(5 * time.Second)
-			client.SetTimeout(15 * time.Second)
+		ClientOptionsHandler: func(opts *options.ClientOptions) {
+			opts.SetConnectTimeout(5 * time.Second)
+			opts.SetTimeout(15 * time.Second)
 		},
 	})
 	if err != nil {

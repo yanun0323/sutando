@@ -87,7 +87,7 @@ Create a new mongoDB connection
 		DB:        "example",
 		AdminAuth: true,
 		Pem:       "",		// optional
-		OptionHandler: func(client *options.ClientOptions) {
+		ClientOptionsHandler: func(opts *options.ClientOptions) {
 			// do something...
 		},
 	})
@@ -99,7 +99,7 @@ Create a new mongoDB connection
 		Host:      "example.mongo.net",
 		DB:        "example",
 		Srv:       true,
-		OptionHandler: func(client *options.ClientOptions) {
+		ClientOptionsHandler: func(opts *options.ClientOptions) {
 			// do something...
 		},
 	})
@@ -125,7 +125,7 @@ func NewDB(ctx context.Context, c Connection) (DB, error) {
 		opts.SetTLSConfig(cfg)
 	}
 
-	c.SetupOption(opts)
+	c.SetupClientOptions(opts)
 
 	f := false
 	opts.RetryWrites = &f

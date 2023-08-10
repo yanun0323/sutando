@@ -73,9 +73,9 @@ func (su *dbSuite) TestSrvGood() {
 		DB:        "test",
 		AdminAuth: true,
 		Srv:       true,
-		OptionHandler: func(client *options.ClientOptions) {
-			client.SetConnectTimeout(3 * time.Second)
-			client.SetTimeout(3 * time.Second)
+		ClientOptionsHandler: func(opts *options.ClientOptions) {
+			opts.SetConnectTimeout(3 * time.Second)
+			opts.SetTimeout(3 * time.Second)
 		},
 	})
 	su.Require().NoError(err)
