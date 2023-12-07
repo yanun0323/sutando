@@ -102,6 +102,13 @@ $ go get -u github.com/yanun0323/sutando
     resultMany := []struct{}
     err := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).Exec(ctx, &resultMany)
 ```
+
+#### Scalar
+```go
+    // Count
+    count, err := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).Count(ctx, "_index_id_")
+```
+
 #### Create
 ```go
     resultOne, _, err := db.Collection("Collection").Insert(&obj).Exec(ctx)
@@ -138,6 +145,7 @@ $ go get -u github.com/yanun0323/sutando
 
 |Version|Description
 |:-:|:-
+|1.3.7| - Added `Scalar` <br> - Moved `Count` from `Query` to `Scalar`
 |1.3.6| - Added `Regex` into `Update` `Find` `Delete` `Query`
 |1.3.5| - Fixed `Find` no document mismatch error
 |1.3.4| - Added `Count` into `Query`
