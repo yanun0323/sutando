@@ -5,16 +5,22 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type find struct {
-	q querying
+	q       querying
+	optOne  *options.FindOneOptions
+	optMany *options.FindOptions
 }
 
 func newFind(collection *mongo.Collection) finding {
 	return &find{
-		q: newQuery(collection),
+		q:       newQuery(collection),
+		optOne:  options.FindOne(),
+		optMany: options.Find(),
 	}
 }
 
@@ -83,6 +89,30 @@ func (f *find) First() finding {
 	return f
 }
 
+func (f *find) Sort(value map[string]bool) finding {
+	s := make([]bson.E, 0, len(value))
+	for k, v := range value {
+		e := bson.E{Key: k, Value: -1}
+		if v {
+			e.Value = 1
+		}
+		s = append(s, e)
+	}
+	f.optMany.SetSort(s)
+	return f
+}
+
+func (f *find) Limit(i int64) finding {
+	f.optMany.SetLimit(i)
+	return f
+}
+
+func (f *find) Skip(i int64) finding {
+	f.optOne.SetSkip(i)
+	f.optMany.SetSkip(i)
+	return f
+}
+
 func (f *find) Exec(ctx context.Context, p any) error {
 	if reflect.TypeOf(p).Kind() != reflect.Pointer {
 		return errors.New("object to find should be a pointer")
@@ -114,16 +144,17 @@ func (f *find) Exec(ctx context.Context, p any) error {
 }
 
 func (f *find) execFindOne(ctx context.Context, p any) error {
-	result := f.q.col().FindOne(ctx, f.q.build())
+	result := f.q.col().FindOne(ctx, f.q.build(), f.optOne)
 	err := result.Decode(p)
 	if err != nil {
 		return errors.Errorf("decode, err: %+v", err)
 	}
+
 	return nil
 }
 
 func (f *find) execFindMany(ctx context.Context, q finding, p any) error {
-	cursor, err := f.q.col().Find(ctx, f.q.build())
+	cursor, err := f.q.col().Find(ctx, f.q.build(), f.optMany)
 	if err != nil {
 		return errors.Errorf("find, err: %+v", err)
 	}

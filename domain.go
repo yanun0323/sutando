@@ -75,6 +75,10 @@ type finding interface {
 	In(key string, value ...any) finding
 	NotIn(key string, value ...any) finding
 	First() finding
+	// Sort return sorted elements, value means [key:asc]
+	Sort(value map[string]bool) finding
+	Limit(i int64) finding
+	Skip(i int64) finding
 
 	Exec(ctx context.Context, result any) error
 }

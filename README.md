@@ -16,6 +16,9 @@
 - Contain
 - In
 - NotIn
+- Sort
+- Limit
+- Skip
 
 ## Guide
 
@@ -133,6 +136,7 @@ $ go get -u github.com/yanun0323/sutando
 
 |Version|Description
 |:-:|:-
+|1.3.3| - Added `Sort` `Limit` `Skip` into `Find`
 |1.3.2| - Added deprecated comment for `DB`
 |1.3.1| - Renamed `OptionHandler` to `ClientOptionsHandler` <br> - Renamed `SetupOption` to `SetupClientOptions`
 |1.3.0| - Added `Execute Chain` <br> - Fixed error when input only one slice in insert function <br> - Fixed error when input only one param/slice in In/NotIn function <br> - Fixed `bson` `omitempty` supported <br> - Fixed embed structure lowercase Name issue <br> - Fixed map structure value lowercase Name issue <br> - Fixed array structure value lowercase Name issue <br> - Plan to remove db execute function in version 1.4.X

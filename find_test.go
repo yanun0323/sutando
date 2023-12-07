@@ -79,6 +79,21 @@ func (su *findSuite) TestFindGood() {
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.NotEmpty(a)
 		su.Equal(3, len(a))
+
+		err = col.Find().Contain("arrTest", 1, 3, 5).Skip(2).Exec(su.ctx, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
+		su.Equal(1, len(a))
+
+		err = col.Find().Contain("arrTest", 1, 3, 5).Limit(2).Exec(su.ctx, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
+		su.Equal(2, len(a))
+
+		err = col.Find().Contain("arrTest", 1, 3, 5).Sort(map[string]bool{"struct_age": true}).Limit(2).Exec(su.ctx, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
+		su.Equal(2, len(a))
 	}
 
 	{
