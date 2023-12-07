@@ -53,6 +53,6 @@ func (b builder) Delete() deleting {
 /*
 For Query Test
 */
-func (b builder) query() querying {
+func (b builder) Query() querying {
 	return newQuery(b.col)
 }

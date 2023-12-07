@@ -59,6 +59,8 @@ type querying interface {
 	In(key string, value ...any) querying
 	NotIn(key string, value ...any) querying
 	First() querying
+
+	Count(ctx context.Context, index ...string) (int64, error)
 }
 
 type finding interface {

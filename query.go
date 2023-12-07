@@ -1,10 +1,12 @@
 package sutando
 
 import (
+	"context"
 	"reflect"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type query struct {
@@ -126,4 +128,12 @@ func (q *query) isOne() bool {
 func (q *query) appendFilters(operation, key string, value ...any) querying {
 	q.filters = append(q.filters, newFilter(operation, key, value...))
 	return q
+}
+
+func (q *query) Count(ctx context.Context, index ...string) (int64, error) {
+	opt := options.Count()
+	if len(index) != 0 && len(index[0]) != 0 {
+		opt.SetHint(index[0])
+	}
+	return q.coll.CountDocuments(ctx, q.build(), opt)
 }

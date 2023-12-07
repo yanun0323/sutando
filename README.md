@@ -19,6 +19,7 @@
 - Sort
 - Limit
 - Skip
+- Count
 
 ## Guide
 
@@ -136,6 +137,7 @@ $ go get -u github.com/yanun0323/sutando
 
 |Version|Description
 |:-:|:-
+|1.3.4| - Added `Count` into `Query`
 |1.3.3| - Added `Sort` `Limit` `Skip` into `Find`
 |1.3.2| - Added deprecated comment for `DB`
 |1.3.1| - Renamed `OptionHandler` to `ClientOptionsHandler` <br> - Renamed `SetupOption` to `SetupClientOptions`
