@@ -145,6 +145,10 @@ func (f *find) Exec(ctx context.Context, p any) error {
 
 func (f *find) execFindOne(ctx context.Context, p any) error {
 	result := f.q.col().FindOne(ctx, f.q.build(), f.optOne)
+	if errors.Is(result.Err(), mongo.ErrNoDocuments) {
+		return ErrNoDocument
+	}
+
 	err := result.Decode(p)
 	if err != nil {
 		return errors.Errorf("decode, err: %+v", err)

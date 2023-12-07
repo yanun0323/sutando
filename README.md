@@ -137,6 +137,7 @@ $ go get -u github.com/yanun0323/sutando
 
 |Version|Description
 |:-:|:-
+|1.3.5| - Fixed `Find` no document mismatch error
 |1.3.4| - Added `Count` into `Query`
 |1.3.3| - Added `Sort` `Limit` `Skip` into `Find`
 |1.3.2| - Added deprecated comment for `DB`
