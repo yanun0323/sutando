@@ -87,5 +87,9 @@ func (s *scalar) Count(ctx context.Context, index ...string) (int64, error) {
 	if len(index) != 0 && len(index[0]) != 0 {
 		opt.SetHint(index[0])
 	}
-	return s.q.col().CountDocuments(ctx, s.q.build(), opt)
+	i, err := s.q.col().CountDocuments(ctx, s.q.build(), opt)
+	if err != nil {
+		return s.q.col().CountDocuments(ctx, s.q.build(), options.Count())
+	}
+	return i, nil
 }
