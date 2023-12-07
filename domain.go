@@ -44,6 +44,24 @@ type updating interface {
 	buildObjects() any
 }
 
+type scalaring interface {
+	Exists(key string, exists bool) scalaring
+	And(key string, value any) scalaring
+	Equal(key string, value any) scalaring
+	NotEqual(key string, value ...any) scalaring
+	Greater(key string, value any) scalaring
+	GreaterOrEqual(key string, value any) scalaring
+	Less(key string, value any) scalaring
+	LessOrEqual(key string, value any) scalaring
+	Bitwise(key string, value any) scalaring
+	Contain(key string, value ...any) scalaring
+	In(key string, value ...any) scalaring
+	NotIn(key string, value ...any) scalaring
+	Regex(key string, regex string) scalaring
+
+	Count(ctx context.Context, index ...string) (int64, error)
+}
+
 type querying interface {
 	common
 
@@ -61,8 +79,6 @@ type querying interface {
 	NotIn(key string, value ...any) querying
 	Regex(key string, regex string) querying
 	First() querying
-
-	Count(ctx context.Context, index ...string) (int64, error)
 }
 
 type finding interface {

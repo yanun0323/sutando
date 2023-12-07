@@ -51,8 +51,15 @@ func (b builder) Delete() deleting {
 }
 
 /*
+Scalar data
+*/
+func (b builder) Scalar() scalaring {
+	return newScalar(b.col)
+}
+
+/*
 For Query Test
 */
-func (b builder) Query() querying {
+func (b builder) query() querying {
 	return newQuery(b.col)
 }
