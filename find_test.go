@@ -94,6 +94,15 @@ func (su *findSuite) TestFindGood() {
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.NotEmpty(a)
 		su.Equal(2, len(a))
+
+		err = col.Find().Regex("structName", "^Yan.*").Exec(su.ctx, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
+		su.Equal(3, len(a))
+
+		err = col.Find().Regex("structName", "^BBn.*").Exec(su.ctx, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.Empty(a)
 	}
 
 	{
@@ -101,5 +110,11 @@ func (su *findSuite) TestFindGood() {
 		su.Error(col.Find().Exec(su.ctx, &a))
 
 		su.Error(col.Find().Equal("structName", "Yanun").Exec(su.ctx, &a))
+	}
+
+	{
+		var a testStruct
+		err := su.db.Collection("empty").Find().First().Exec(su.ctx, &a)
+		su.True(errors.Is(ErrNoDocument, err))
 	}
 }

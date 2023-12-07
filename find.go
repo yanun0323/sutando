@@ -84,6 +84,11 @@ func (f *find) NotIn(key string, value ...any) finding {
 	return f
 }
 
+func (f *find) Regex(key string, regex string) finding {
+	f.q.Regex(key, regex)
+	return f
+}
+
 func (f *find) First() finding {
 	f.q.First()
 	return f

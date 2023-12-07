@@ -94,6 +94,11 @@ func (u *update) NotIn(key string, value ...any) updating {
 	return u
 }
 
+func (u *update) Regex(key string, regex string) updating {
+	u.q.Regex(key, regex)
+	return u
+}
+
 func (u *update) First() updating {
 	u.q.First()
 	return u

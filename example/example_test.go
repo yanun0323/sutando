@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
-	"github.com/yanun0323/sutando"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/yanun0323/sutando"
 )
 
 func Test(t *testing.T) {
@@ -61,7 +62,7 @@ func Test(t *testing.T) {
 		}
 
 		var found School
-		if err := col.Find().Equal("name", "sutando").First().Exec(ctx, &found); errors.Is(sutando.ErrNoDocument, err) {
+		if err := col.Find().Equal("name", "sutando").First().Exec(ctx, &found); !errors.Is(sutando.ErrNoDocument, err) {
 			t.Fatalf("expected no document error, but get error: %+v, found: %+v", err, found)
 		}
 	}

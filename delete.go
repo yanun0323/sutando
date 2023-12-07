@@ -77,6 +77,11 @@ func (d *delete) NotIn(key string, value ...any) deleting {
 	return d
 }
 
+func (d *delete) Regex(key string, regex string) deleting {
+	d.q.Regex(key, regex)
+	return d
+}
+
 func (d *delete) First() deleting {
 	d.q.First()
 	return d

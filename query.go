@@ -116,6 +116,11 @@ func (q *query) NotIn(key string, value ...any) querying {
 	}
 }
 
+func (q *query) Regex(key string, regex string) querying {
+	q.appendFilters("$regex", key, regex)
+	return q
+}
+
 func (q *query) First() querying {
 	q.one = true
 	return q
