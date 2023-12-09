@@ -220,13 +220,13 @@ func (su *dbSuite) TestOldGood() {
 	{
 		data := mockData()
 		insOne := db.Collection(su.col).Insert(&data)
-		resultOne, _, err := db.ExecInsert(su.ctx, insOne)
+		resultOne, _, err := insOne.Exec(su.ctx)
 		su.Assert().NoError(err)
 		su.Assert().NotNil(resultOne)
 		su.T().Log("insert one ID: ", resultOne.InsertedID)
 
 		insMany := db.Collection(su.col).Insert(&data, &data, &data)
-		_, resultMany, err := db.ExecInsert(su.ctx, insMany)
+		_, resultMany, err := insMany.Exec(su.ctx)
 		su.Assert().NoError(err)
 		su.Assert().NotNil(resultMany)
 		su.T().Log("insert count: ", len(resultMany.InsertedIDs))
@@ -237,18 +237,18 @@ func (su *dbSuite) TestOldGood() {
 		var a testStruct
 
 		queryOneFist := db.Collection(su.col).Find().First()
-		su.Nil(db.ExecFind(su.ctx, queryOneFist, &a))
+		su.Nil(queryOneFist.Exec(su.ctx, &a))
 		su.NotEmpty(a)
 
 		queryOneFistFailed := db.Collection(su.col).Find()
-		su.Error(db.ExecFind(su.ctx, queryOneFistFailed, &a))
+		su.Error(queryOneFistFailed.Exec(su.ctx, &a))
 	}
 
 	{
 		var a []testStruct
 
 		query := db.Collection(su.col).Find()
-		err := db.ExecFind(su.ctx, query, &a)
+		err := query.Exec(su.ctx, &a)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.NotEmpty(a)
 		su.T().Log("find all count: ", len(a))
@@ -258,12 +258,12 @@ func (su *dbSuite) TestOldGood() {
 		var a testStruct
 
 		query := db.Collection(su.col).Find().Equal("structName", "Yanun").First()
-		err := db.ExecFind(su.ctx, query, &a)
+		err := query.Exec(su.ctx, &a)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.NotEmpty(a)
 
 		query = db.Collection(su.col).Find().Equal("structName", "Yanun")
-		err = db.ExecFind(su.ctx, query, &a)
+		err = query.Exec(su.ctx, &a)
 		su.Error(err)
 	}
 
@@ -271,13 +271,13 @@ func (su *dbSuite) TestOldGood() {
 		var a []testStruct
 
 		query := db.Collection(su.col).Find().Contain("arrTest", 1, 3, 5).First()
-		err := db.ExecFind(su.ctx, query, &a)
+		err := query.Exec(su.ctx, &a)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.NotEmpty(a)
 		su.T().Log("find contain first count: ", len(a))
 
 		query = db.Collection(su.col).Find().Contain("arrTest", 1, 3, 5)
-		err = db.ExecFind(su.ctx, query, &a)
+		err = query.Exec(su.ctx, &a)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.NotEmpty(a)
 		su.T().Log("find contain count: ", len(a))
@@ -287,24 +287,24 @@ func (su *dbSuite) TestOldGood() {
 		data := mockData()
 		data.StructName = "Vin"
 		update := db.Collection(su.col).UpdateWith(&data).Equal("structName", "Yanun").First()
-		result, err := db.ExecUpdate(su.ctx, update, false)
+		result, err := update.Exec(su.ctx, false)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.T().Log("update first count: ", result.ModifiedCount)
 
 		update = db.Collection(su.col).UpdateWith(&data).Equal("structName", "Yanun")
-		result, err = db.ExecUpdate(su.ctx, update, false)
+		result, err = update.Exec(su.ctx, false)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.T().Log("update count: ", result.ModifiedCount)
 	}
 
 	{
 		query := db.Collection(su.col).Delete().Equal("structName", "Vin").First()
-		result, err := db.ExecDelete(su.ctx, query)
+		result, err := query.Exec(su.ctx)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.T().Log("delete count: ", result.DeletedCount)
 
 		query = db.Collection(su.col).Delete().Equal("structName", "Vin")
-		result, err = db.ExecDelete(su.ctx, query)
+		result, err = query.Exec(su.ctx)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.T().Log("delete count: ", result.DeletedCount)
 	}

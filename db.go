@@ -34,33 +34,6 @@ type DB interface {
 	*/
 	Collection(name string, opts ...*options.CollectionOptions) builder
 
-	// ExecInsert executes insert query. use [Exec] instead.
-	//
-	// 	_, _, err := db.Collection("collectionName").Insert(&data).Exec(ctx)
-	//
-	// Deprecated: Use [Exec] instead after sutando v1.3.0.
-	ExecInsert(ctx context.Context, i inserting) (insertOneResult, insertManyResult, error)
-
-	// ExecFind executes find query.. use [Exec] instead.
-	//
-	//	err := db.Collection("collectionName").Find().First().Exec(ctx, &result)
-	//
-	// Deprecated: Use [Exec] instead after sutando v1.3.0:
-	ExecFind(ctx context.Context, f finding, p any) error
-
-	// ExecUpdate executes update query. use [Exec] instead.
-	//
-	// 	_, err := db.Collection("collectionName").Update().Equal("Field", "sutando").Set("Field", "hello").First().Exec(ctx, false)
-	//
-	// Deprecated: Use [Exec] instead after sutando v1.3.0:
-	ExecUpdate(ctx context.Context, u updating, upsert bool) (updateResult, error)
-
-	// ExecDelete executes delete query. use [Exec] instead.
-	//
-	//	_, err := db.Collection("collectionName").Delete().First().Exec(ctx)
-	//
-	// Deprecated: Use [Exec] instead after sutando v1.3.0:
-	ExecDelete(ctx context.Context, d deleting) (deleteResult, error)
 	/*
 		Disconnect closes sockets to the topology referenced by this Client. It will
 		shut down any monitoring goroutines, close the idle connection pool, and will

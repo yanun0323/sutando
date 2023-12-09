@@ -13,6 +13,7 @@ import (
 )
 
 func Test(t *testing.T) {
+
 	ctx := context.Background()
 	db, err := sutando.NewDB(ctx, &sutando.Conn{
 		Username:  "test",
