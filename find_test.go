@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/yanun0323/sutando/option"
 )
 
 type findSuite struct {
@@ -100,7 +101,16 @@ func (su *findSuite) TestFindGood() {
 		su.NotEmpty(a)
 		su.Equal(3, len(a))
 
-		err = col.Find().Regex("structName", "^BBn.*").Exec(su.ctx, &a)
+		err = col.Find().Regex("structName", "^yan.*", option.MatchMultiLine).Exec(su.ctx, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.Empty(a)
+
+		err = col.Find().Regex("structName", "^yan.*", option.CaseInsensitive|option.MatchMultiLine).Exec(su.ctx, &a)
+		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
+		su.NotEmpty(a)
+		su.Equal(3, len(a))
+
+		err = col.Find().Regex("structName", "^BBn.*", option.CaseInsensitive|option.MatchMultiLine).Exec(su.ctx, &a)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.Empty(a)
 	}

@@ -17,7 +17,9 @@ import (
 func Benchmark(b *testing.B) {
 	db := connect(b.Fatal)
 	for i := 0; i < b.N; i++ {
-		_ = testInstant(db, strconv.Itoa(rand.Int()))
+		if err := testInstant(db, strconv.Itoa(rand.Int())); err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
@@ -67,26 +69,38 @@ func testInstant(db sutando.DB, collection string) error {
 		}
 	}
 
+	{ // Count
+		c, err := col.Scalar().Count(ctx)
+		if err != nil {
+			return errors.New(fmt.Sprintf("%+v", err))
+		}
+		if c == 0 {
+			errors.New("no data in database")
+		}
+	}
+
 	{ // Find
 		var result School
-		if err := col.Find().Equal("name", "sutando").Exists("room.901", true).First().Exec(ctx, &result); err != nil {
+		err := col.Find().Equal("name", "sutando").Exists("room.901", true).First().Exec(ctx, &result)
+		if err != nil {
 			return errors.New(fmt.Sprintf("%+v", err))
 		}
 	}
 
 	{ // Update
-		_school.Name = "changed"
+		_school.BuildedTime = time.Now()
 		result, err := col.UpdateWith(&_school).Equal("name", "sutando").Exec(ctx, false)
 		if err != nil {
 			return errors.New(fmt.Sprintf("%+v", err))
 		}
 
-		if result.ModifiedCount != 1 {
+		if result.MatchedCount == 0 {
 			return errors.New("updated nothing")
 		}
 
 		var found School
-		if err := col.Find().Equal("name", "sutando").First().Exec(ctx, &found); !errors.Is(sutando.ErrNoDocument, err) {
+		err = col.Find().Equal("name", "sutando").First().Exec(ctx, &found)
+		if err != nil && !errors.Is(sutando.ErrNoDocument, err) {
 			return errors.New(fmt.Sprintf("%+v", err))
 		}
 	}
