@@ -1,6 +1,8 @@
 package sutando
 
 import (
+	"context"
+
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -55,6 +57,13 @@ Scalar scalars data
 */
 func (b builder) Scalar() scalaring {
 	return newScalar(b.col)
+}
+
+/*
+Drop drops this collection from database
+*/
+func (b builder) Drop(ctx context.Context) error {
+	return b.col.Drop(ctx)
 }
 
 /*

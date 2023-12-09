@@ -2,6 +2,7 @@ package example
 
 import (
 	"context"
+	"strconv"
 	"testing"
 	"time"
 
@@ -26,8 +27,9 @@ func Test(t *testing.T) {
 }
 
 func testInstant() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	ctx := context.Background()
 	db, err := sutando.NewDB(ctx, &sutando.Conn{
 		Username:  "test",
 		Password:  "test",
@@ -44,7 +46,8 @@ func testInstant() error {
 		return (err)
 	}
 
-	col := db.Collection("example_collection")
+	collection := strconv.FormatInt(time.Now().Unix(), 10)
+	col := db.Collection(collection)
 	_, _ = col.Delete().Exec(ctx)
 
 	{ // Insert
@@ -91,7 +94,7 @@ func testInstant() error {
 		}
 	}
 
-	return nil
+	return col.Drop(ctx)
 }
 
 var (
