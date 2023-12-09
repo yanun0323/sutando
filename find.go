@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
+	"github.com/yanun0323/sutando/option"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -84,8 +85,8 @@ func (f *find) NotIn(key string, value ...any) finding {
 	return f
 }
 
-func (f *find) Regex(key string, regex string) finding {
-	f.q.Regex(key, regex)
+func (f *find) Regex(key string, regex string, opt ...option.Regex) finding {
+	f.q.Regex(key, regex, opt...)
 	return f
 }
 

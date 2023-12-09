@@ -3,6 +3,7 @@ package sutando
 import (
 	"context"
 
+	"github.com/yanun0323/sutando/option"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -77,8 +78,8 @@ func (d *delete) NotIn(key string, value ...any) deleting {
 	return d
 }
 
-func (d *delete) Regex(key string, regex string) deleting {
-	d.q.Regex(key, regex)
+func (d *delete) Regex(key string, regex string, opt ...option.Regex) deleting {
+	d.q.Regex(key, regex, opt...)
 	return d
 }
 

@@ -3,6 +3,7 @@ package sutando
 import (
 	"reflect"
 
+	"github.com/yanun0323/sutando/option"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -114,7 +115,8 @@ func (q *query) NotIn(key string, value ...any) querying {
 	}
 }
 
-func (q *query) Regex(key string, regex string) querying {
+func (q *query) Regex(key string, regex string, opt ...option.Regex) querying {
+	// TODO: Implement me
 	q.appendFilters("$regex", key, regex)
 	return q
 }
