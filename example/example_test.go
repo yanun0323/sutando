@@ -2,6 +2,8 @@ package example
 
 import (
 	"context"
+	"fmt"
+	"math/rand"
 	"strconv"
 	"testing"
 	"time"
@@ -13,24 +15,22 @@ import (
 )
 
 func Benchmark(b *testing.B) {
+	db := connect(b.Fatal)
 	for i := 0; i < b.N; i++ {
-		if err := testInstant(); err != nil {
-			b.Fatal(err)
-		}
+		_ = testInstant(db, strconv.Itoa(rand.Int()))
 	}
 }
 
 func Test(t *testing.T) {
-	if err := testInstant(); err != nil {
-		t.Fatal(err)
+	t.Log("Test")
+	db := connect(t.Fatal)
+	if err := testInstant(db, "example_collection"); err != nil {
+		t.Fatalf("%+v", err)
 	}
 }
 
-func testInstant() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	db, err := sutando.NewDB(ctx, &sutando.Conn{
+func connect(fatal func(args ...any)) sutando.DB {
+	db, err := sutando.NewDB(context.Background(), &sutando.Conn{
 		Username:  "test",
 		Password:  "test",
 		Host:      "localhost",
@@ -43,17 +43,24 @@ func testInstant() error {
 		},
 	})
 	if err != nil {
-		return (err)
+		fatal(err)
 	}
+	return db
+}
 
-	collection := strconv.FormatInt(time.Now().Unix(), 10)
+func testInstant(db sutando.DB, collection string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	col := db.Collection(collection)
+	defer db.GetDriverDB().Collection(collection).Drop(ctx)
+
 	_, _ = col.Delete().Exec(ctx)
 
 	{ // Insert
 		result, _, err := col.Insert(_school).Exec(ctx)
 		if err != nil {
-			return (err)
+			return errors.New(fmt.Sprintf("%+v", err))
 		}
 		if result.InsertedID == nil {
 			return errors.New("empty inserted ID")
@@ -63,7 +70,7 @@ func testInstant() error {
 	{ // Find
 		var result School
 		if err := col.Find().Equal("name", "sutando").Exists("room.901", true).First().Exec(ctx, &result); err != nil {
-			return err
+			return errors.New(fmt.Sprintf("%+v", err))
 		}
 	}
 
@@ -71,7 +78,7 @@ func testInstant() error {
 		_school.Name = "changed"
 		result, err := col.UpdateWith(&_school).Equal("name", "sutando").Exec(ctx, false)
 		if err != nil {
-			return err
+			return errors.New(fmt.Sprintf("%+v", err))
 		}
 
 		if result.ModifiedCount != 1 {
@@ -80,21 +87,21 @@ func testInstant() error {
 
 		var found School
 		if err := col.Find().Equal("name", "sutando").First().Exec(ctx, &found); !errors.Is(sutando.ErrNoDocument, err) {
-			return err
+			return errors.New(fmt.Sprintf("%+v", err))
 		}
 	}
 
 	{ // Delete
 		result, err := col.Delete().Contain("room").Exec(ctx)
 		if err != nil {
-			return err
+			return errors.New(fmt.Sprintf("%+v", err))
 		}
 		if result.DeletedCount != 1 {
 			return errors.New("deleted nothing")
 		}
 	}
 
-	return col.Drop(ctx)
+	return nil
 }
 
 var (
