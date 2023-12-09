@@ -79,7 +79,7 @@ func (ins *insert) Exec(ctx context.Context) (insertOneResult, insertManyResult,
 
 func (ins *insert) wrapDuplicateKeyErr(err error) error {
 	if mongo.IsDuplicateKeyError(err) {
-		return ErrDuplicateKey
+		return ErrDuplicatedKey
 	}
 	return err
 }

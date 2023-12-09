@@ -35,7 +35,7 @@ $ go get -u github.com/yanun0323/sutando@latest
 
 - Create a new connection
 ```go
-    // connect using host and port.
+    // connect through host and port.
     db, err := sutando.NewDB(ctx, sutando.Conn{
     	Username:  "example",
     	Password:  "example",
@@ -50,7 +50,7 @@ $ go get -u github.com/yanun0323/sutando@latest
     	},
     })
 
-    // connect using SRV url.
+    // connect through SRV.
     db, err := sutando.NewDB(ctx, sutando.ConnSrv{
     	Username:  "example",
     	Password:  "example",

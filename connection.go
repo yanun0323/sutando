@@ -7,12 +7,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// Connection provides a definition of connect configuration.
 type Connection interface {
 	DSN(cfg *tls.Config) (dns string, isPem bool)
 	Database() string
 	SetupClientOptions(*options.ClientOptions)
 }
 
+// Conn is an implementation of the Connection interface
+// for connecting mongo db through the host and port.
 type Conn struct {
 	Username  string
 	Password  string
@@ -63,6 +66,8 @@ func (c Conn) SetupClientOptions(opt *options.ClientOptions) {
 	}
 }
 
+// ConnSrv is an implementation of the Connection interface
+// for connecting mongo db through the SRV.
 type ConnSrv struct {
 	Username  string
 	Password  string

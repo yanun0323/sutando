@@ -18,10 +18,17 @@ type updateResult *mongo.UpdateResult
 type deleteResult *mongo.DeleteResult
 
 var (
-	ErrNoDocument   = mongo.ErrNoDocuments
-	ErrDuplicateKey = errors.New("mongo: duplicated key")
+	// ErrNoDocuments occurs when the operation
+	// that created the SingleResult did not return
+	// any document.
+	ErrNoDocument = mongo.ErrNoDocuments
+
+	// ErrDuplicatedKey occurs when there is a
+	// unique key constraint violation.
+	ErrDuplicatedKey = errors.New("mongo: duplicated key")
 )
 
+// DB provides a definition of db behavior.
 type DB interface {
 	// RawClient returns the raw mongo client diver.
 	RawClient() *mongo.Client
@@ -64,9 +71,9 @@ type sutandoDB struct {
 	db     string
 }
 
-// NewDB creates a new mongoDB connection.
+// NewDB initializes a sutando.DB from providing connection configuration.
 //
-//	// connect using host and port.
+//	// connect through host and port.
 //	db, err := sutando.NewDB(ctx, sutando.Conn{
 //		Username:  "example",
 //		Password:  "example",
@@ -81,7 +88,7 @@ type sutandoDB struct {
 //		},
 //	})
 //
-//	// connect using SRV url.
+//	// connect through SRV.
 //	db, err := sutando.NewDB(ctx, sutando.ConnSrv{
 //		Username:  "example",
 //		Password:  "example",
@@ -134,7 +141,7 @@ func NewDB(ctx context.Context, c Connection) (DB, error) {
 	return &sutandoDB{client, c.Database()}, nil
 }
 
-// NewDBFromMongo using the mongoDB connection from an existed mongo-driver.
+// NewDBFromMongo initializes a sutando.DB by using the mongoDB connection from an existed mongo-driver.
 //
 //	var client *mongo.Client
 //	...
