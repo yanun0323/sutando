@@ -153,6 +153,7 @@ $ go get -u github.com/yanun0323/sutando@latest
 
 |Version|Description
 |:-:|:-
+|1.4.1| - Completed comment for all struct, interface, function
 |1.4.0| - Remove all db execute functions <br> - Removed `Query` <br> - Removed method `Bitwise` <br> - Added `ConnSrv` connection structure <br> - Added method `Drop` into `Collection()` method chain <br> - Added comment for all methods <br> - Added `option` parameter into `Regex` method <br> - Rewrite the structure fo filters <br> - Renamed `GetDriver` to `RawClient` <br> - Renamed `GetDriverDB` to `RawDatabase` <br> - Fixed after invoking `Find`, didn't call `defer cursor.Close()`
 |1.3.7| - Added `Scalar` <br> - Moved method `Count` from `Query` to `Scalar`
 |1.3.6| - Added method `Regex` into `Update` `Find` `Delete` `Query`
