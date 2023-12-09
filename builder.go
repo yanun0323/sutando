@@ -33,6 +33,15 @@ func (b builder) Insert(p ...any) inserting {
 
 // Update provides the operation to update documents with structure. (updates all fields, including empty fields)
 //
+//	// update one
+//	result, err := db.Collection("col_name").
+//		UpdateWith(&obj).
+//		Equal("name", "yanun").
+//		Exists("age", true).
+//		First().
+//		Exec(ctx, true)
+//
+//	// update many
 //	result, err := db.Collection("col_name").
 //		UpdateWith(&obj).
 //		Equal("name", "yanun").
