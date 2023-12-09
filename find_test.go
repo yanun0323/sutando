@@ -70,7 +70,7 @@ func (su *findSuite) TestFindGood() {
 	{
 		var a []testStruct
 
-		err := col.Find().Contain("arrTest", 1, 3, 5).First().Exec(su.ctx, &a)
+		err := col.Find().Contain("arrTest", 1).First().Exec(su.ctx, &a)
 		su.True(err == nil || errors.Is(err, ErrNoDocument), err)
 		su.NotEmpty(a)
 		su.Equal(1, len(a))

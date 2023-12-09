@@ -9,25 +9,20 @@ import (
 )
 
 type query struct {
-	coll    *mongo.Collection
-	filters []filter
-	one     bool
+	coll *mongo.Collection
+	f    filter
+	one  bool
 }
 
 func newQuery(collection *mongo.Collection) querying {
 	return &query{
-		coll:    collection,
-		filters: []filter{},
+		coll: collection,
+		f:    filter{d: bsonD()},
 	}
 }
 
 func (q *query) build() bson.D {
-	query := make(bson.D, 0, len(q.filters))
-	for i := range q.filters {
-		e := q.filters[i].bson().(bson.E)
-		query = append(query, e)
-	}
-	return query
+	return q.f.d
 }
 
 func (q *query) col() *mongo.Collection {
@@ -35,46 +30,49 @@ func (q *query) col() *mongo.Collection {
 }
 
 func (q *query) Exists(key string, exists bool) querying {
-	return q.appendFilters("$exists", key, exists)
+	return q.add(key, bsonM("$exists", exists))
 }
 
 func (q *query) And(key string, value any) querying {
-	return q.appendFilters("", key, value)
+	return q.add(key, value)
 }
 
 func (q *query) Equal(key string, value any) querying {
-	return q.appendFilters("$eq", key, value)
+	return q.add(key, bsonM("$eq", value))
 }
 
 func (q *query) NotEqual(key string, value ...any) querying {
-	return q.appendFilters("$ne", key, value...).Exists(key, true)
+	if len(value) == 0 {
+		return q
+	}
+	return q.add(key, bsonM("$ne", purge(value))).Exists(key, true)
 }
 
 func (q *query) Greater(key string, value any) querying {
-	return q.appendFilters("$gt", key, value)
+	return q.add(key, bsonM("$gt", value))
 }
 
 func (q *query) GreaterOrEqual(key string, value any) querying {
-	return q.appendFilters("$gte", key, value)
+	return q.add(key, bsonM("$gte", value))
 }
 
 func (q *query) Less(key string, value any) querying {
-	return q.appendFilters("$lt", key, value)
+	return q.add(key, bsonM("$lt", value))
 }
 
 func (q *query) LessOrEqual(key string, value any) querying {
-	return q.appendFilters("$lte", key, value)
+	return q.add(key, bsonM("$lte", value))
 }
 
 func (q *query) Bitwise(key string, value any) querying {
-	return q.appendFilters("$bitsAllSet", key, value)
+	return q.add(key, bsonM("$bitsAllSet", value))
 }
 
 func (q *query) Contain(key string, value ...any) querying {
 	if len(value) == 0 {
 		return q
 	}
-	return q.appendFilters("$all", key, value...)
+	return q.add(key, bsonM("$all", value))
 }
 
 func (q *query) In(key string, value ...any) querying {
@@ -84,7 +82,7 @@ func (q *query) In(key string, value ...any) querying {
 	case 1:
 		rv := reflect.ValueOf(value[0])
 		if rv.Kind() != reflect.Slice {
-			return q.appendFilters("$in", key, value)
+			return q.add(key, bsonM("$in", value))
 		}
 		data := make([]any, 0, rv.Len())
 		for i := 0; i < rv.Len(); i++ {
@@ -92,7 +90,7 @@ func (q *query) In(key string, value ...any) querying {
 		}
 		return q.In(key, data...)
 	default:
-		return q.appendFilters("$in", key, value...)
+		return q.add(key, bsonM("$in", value))
 	}
 }
 
@@ -103,7 +101,7 @@ func (q *query) NotIn(key string, value ...any) querying {
 	case 1:
 		rv := reflect.ValueOf(value[0])
 		if rv.Kind() != reflect.Slice {
-			return q.appendFilters("$nin", key, value)
+			return q.add(key, bsonM("$nin", value))
 		}
 		data := make([]any, 0, rv.Len())
 		for i := 0; i < rv.Len(); i++ {
@@ -111,14 +109,33 @@ func (q *query) NotIn(key string, value ...any) querying {
 		}
 		return q.NotIn(key, data...)
 	default:
-		return q.appendFilters("$nin", key, value...)
+		return q.add(key, bsonM("$nin", value))
 	}
 }
 
 func (q *query) Regex(key string, regex string, opt ...option.Regex) querying {
-	// TODO: Implement me
-	q.appendFilters("$regex", key, regex)
-	return q
+	if len(opt) == 0 || opt[0] == 0 {
+		return q.add(key, bsonM("$regex", regex))
+	}
+	o := opt[0]
+	buf := make([]byte, 0, 4)
+	if o&option.CaseInsensitive == 1 {
+		buf = append(buf, 'i')
+	}
+
+	if o&option.MatchMultiLine == 1 {
+		buf = append(buf, 'm')
+	}
+
+	if o&option.IgnoreWhitespace == 1 {
+		buf = append(buf, 'x')
+	}
+
+	if o&option.DotMatchNewLine == 1 {
+		buf = append(buf, 's')
+	}
+
+	return q.add(key, bson.M{"$regex": regex, "$options": string(buf)})
 }
 
 func (q *query) First() querying {
@@ -130,7 +147,7 @@ func (q *query) isOne() bool {
 	return q.one
 }
 
-func (q *query) appendFilters(operation, key string, value ...any) querying {
-	q.filters = append(q.filters, newFilter(operation, key, value...))
+func (q *query) add(key string, val any) *query {
+	q.f.append(key, val)
 	return q
 }
