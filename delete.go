@@ -58,11 +58,6 @@ func (d *delete) LessOrEqual(key string, value any) deleting {
 	return d
 }
 
-func (d *delete) Bitwise(key string, value any) deleting {
-	d.q.Bitwise(key, value)
-	return d
-}
-
 func (d *delete) Contain(key string, value ...any) deleting {
 	d.q.Contain(key, value...)
 	return d
@@ -84,7 +79,7 @@ func (d *delete) Regex(key string, regex string, opt ...option.Regex) deleting {
 }
 
 func (d *delete) First() deleting {
-	d.q.First()
+	d.q.first()
 	return d
 }
 

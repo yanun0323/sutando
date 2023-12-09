@@ -10,65 +10,50 @@ type builder struct {
 	col *mongo.Collection
 }
 
-/*
-SetCustomEncodeTypes sets custom encode types/structure
-*/
-func (b builder) SetCustomEncodeTypes() *builder {
+// withCoder sets custom coder of types/structure.
+func (b builder) withCoder() *builder {
+	// TODO: Implement me
 	return &b
 }
 
-/*
-Insert inserts data
-*/
+// Insert inserts document.
+//
+//	err := db.Collection("col_name").Insert(&obj).Exec(ctx)
 func (b builder) Insert(p ...any) inserting {
 	return newInsert(b.col, newBsonEncoder(), p...)
 }
 
-/*
-Update updates data with model (Will update all fields including empty fields)
-*/
+// Update updates document with model. (updates all fields, including empty fields)
 func (b builder) UpdateWith(p any) updating {
 	return newUpdate(b.col, newBsonEncoder(), p)
 }
 
-/*
-Update updates data with set
-*/
+// Update updates document with set.
 func (b builder) Update() updating {
 	return newUpdate(b.col, newBsonEncoder(), nil)
 }
 
-/*
-Find finds data
-*/
+// Find finds document.
 func (b builder) Find() finding {
 	return newFind(b.col)
 }
 
-/*
-Delete deletes data
-*/
+// Delete deletes document.
 func (b builder) Delete() deleting {
 	return newDelete(b.col)
 }
 
-/*
-Scalar scalars data
-*/
-func (b builder) Scalar() scalaring {
-	return newScalar(b.col)
+// Scalar scalars document.
+func (b builder) Scalar() querying {
+	return newQuery(b.col)
 }
 
-/*
-Drop drops this collection from database
-*/
+// Drop drops this collection from database.
 func (b builder) Drop(ctx context.Context) error {
 	return b.col.Drop(ctx)
 }
 
-/*
-query is for package testing
-*/
+// query is for package testing.
 func (b builder) query() querying {
 	return newQuery(b.col)
 }

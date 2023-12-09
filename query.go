@@ -1,11 +1,13 @@
 package sutando
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/yanun0323/sutando/option"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type query struct {
@@ -138,7 +140,19 @@ func (q *query) Regex(key string, regex string, opt ...option.Regex) querying {
 	return q.add(key, bson.M{"$regex": regex, "$options": string(buf)})
 }
 
-func (q *query) First() querying {
+func (q *query) Count(ctx context.Context, index ...string) (int64, error) {
+	opt := options.Count()
+	if len(index) != 0 && len(index[0]) != 0 {
+		opt.SetHint(index[0])
+	}
+	i, err := q.col().CountDocuments(ctx, q.build(), opt)
+	if err != nil {
+		return q.col().CountDocuments(ctx, q.build(), options.Count())
+	}
+	return i, nil
+}
+
+func (q *query) first() querying {
 	q.one = true
 	return q
 }

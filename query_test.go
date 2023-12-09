@@ -203,9 +203,6 @@ func (su *querySuite) TestQueryGood() {
 	su.NoError(su.invokeQuery(col.query().LessOrEqual("mapTest.1", 0), &a))
 	su.Empty(a)
 
-	// Bitwise
-	// TODO: Implement me
-
 	// Contain
 	su.NoError(su.invokeQuery(col.query().Contain("structAge", 27), &a))
 	su.Equal(3, len(a))

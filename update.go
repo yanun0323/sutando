@@ -75,11 +75,6 @@ func (u *update) LessOrEqual(key string, value any) updating {
 	return u
 }
 
-func (u *update) Bitwise(key string, value any) updating {
-	u.q.Bitwise(key, value)
-	return u
-}
-
 func (u *update) Contain(key string, value ...any) updating {
 	u.q.Contain(key, value...)
 	return u
@@ -101,7 +96,7 @@ func (u *update) Regex(key string, regex string, opt ...option.Regex) updating {
 }
 
 func (u *update) First() updating {
-	u.q.First()
+	u.q.first()
 	return u
 }
 
@@ -114,5 +109,4 @@ func (u *update) Exec(ctx context.Context, upsert bool) (updateResult, error) {
 		return u.q.col().UpdateOne(ctx, u.q.build(), u.buildObjects(), &options.UpdateOptions{Upsert: &upsert})
 	}
 	return u.q.col().UpdateMany(ctx, u.q.build(), u.buildObjects(), &options.UpdateOptions{Upsert: &upsert})
-
 }

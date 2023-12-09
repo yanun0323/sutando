@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"fmt"
 
+	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,33 +18,44 @@ type updateResult *mongo.UpdateResult
 type deleteResult *mongo.DeleteResult
 
 var (
-	ErrNoDocument = mongo.ErrNoDocuments
+	ErrNoDocument   = mongo.ErrNoDocuments
+	ErrDuplicateKey = errors.New("mongo: duplicated key")
 )
 
 type DB interface {
-	/*
-		Return mongo client diver
-	*/
+	// GetDriver returns mongo client diver.
 	GetDriver() *mongo.Client
-	/*
-		Return mongo database diver
-	*/
+
+	// GetDriverDB returns mongo client diver database.
 	GetDriverDB() *mongo.Database
-	/*
-		Collection you want to operate.
-	*/
+
+	// Collection gets a handle for a collection with the given name configured with the given CollectionOptions.
+	//
+	//	col := db.Collection("col_name")
+	//
+	//	// insert
+	//		col.Insert(&obj).Exec(ctx)
+	//
+	//	// find
+	//		col.Find().Equal("name", "yanun").First().Exec(ctx, &result)
+	//
+	//	// update
+	//		upsert := true
+	//		col.Update().Set("name", "changed").Exec(ctx, upsert)
+	//		col.UpdateWith(&obj).Exec(ctx, upsert)
+	//
+	//	// delete
+	//		col.Delete().Greater("age", 20).Exec(ctx)
 	Collection(name string, opts ...*options.CollectionOptions) builder
 
-	/*
-		Disconnect closes sockets to the topology referenced by this Client. It will
-		shut down any monitoring goroutines, close the idle connection pool, and will
-		wait until all the in use connections have been returned to the connection
-		pool and closed before returning. If the context expires via cancellation,
-		deadline, or timeout before the in use connections have returned, the in use
-		connections will be closed, resulting in the failure of any in flight read
-		or write operations. If this method returns with no errors, all connections
-		associated with this Client have been closed.
-	*/
+	// Disconnect closes sockets to the topology referenced by this Client. It will
+	// shut down any monitoring goroutines, close the idle connection pool, and will
+	// wait until all the in use connections have been returned to the connection
+	// pool and closed before returning. If the context expires via cancellation,
+	// deadline, or timeout before the in use connections have returned, the in use
+	// connections will be closed, resulting in the failure of any in flight read
+	// or write operations. If this method returns with no errors, all connections
+	// associated with this Client have been closed.
 	Disconnect(ctx context.Context) error
 }
 
@@ -52,35 +64,33 @@ type sutandoDB struct {
 	db     string
 }
 
-/*
-Create a new mongoDB connection
-
-	// Sample: Using Host and Port
-	db, err := sutando.NewDB(ctx, sutando.Conn{
-		Username:  "example",
-		Password:  "example",
-		Host:      "example",
-		Port:      27017,
-		DB:        "example",
-		AdminAuth: true,
-		Pem:       "",		// optional
-		ClientOptionsHandler: func(opts *options.ClientOptions) {
-			// do something...
-		},
-	})
-
-	// Sample: Using SRV URL
-	db, err := sutando.NewDB(ctx, sutando.Conn{
-		Username:  "example",
-		Password:  "example",
-		Host:      "example.mongo.net",
-		DB:        "example",
-		Srv:       true,
-		ClientOptionsHandler: func(opts *options.ClientOptions) {
-			// do something...
-		},
-	})
-*/
+// NewDB creates a new mongoDB connection.
+//
+//	// connect using host and port.
+//	db, err := sutando.NewDB(ctx, sutando.Conn{
+//		Username:  "example",
+//		Password:  "example",
+//		Host:      "example",
+//		Port:      27017,
+//		DB:        "example",
+//		AdminAuth: true,
+//		Pem:       "",		// optional
+//		ClientOptionsHandler: func(opts *options.ClientOptions) {
+//			// do something...
+//		},
+//	})
+//
+//	// connect using SRV url.
+//	db, err := sutando.NewDB(ctx, sutando.Conn{
+//		Username:  "example",
+//		Password:  "example",
+//		Host:      "example.mongo.net",
+//		DB:        "example",
+//		Srv:       true,
+//		ClientOptionsHandler: func(opts *options.ClientOptions) {
+//			// do something...
+//		},
+//	})
 func NewDB(ctx context.Context, c Connection) (DB, error) {
 	cfg := &tls.Config{
 		RootCAs: x509.NewCertPool(),
@@ -121,15 +131,12 @@ func NewDB(ctx context.Context, c Connection) (DB, error) {
 	return &sutandoDB{client, c.Database()}, nil
 }
 
-/*
-Create a mongoDB connection with an existed mongo-driver
-
-	// Sample:
-	var client *mongo.Client
-	...
-	database := "example"
-	db := sutando.NewDBFromMongo(ctx, client, database)
-*/
+// NewDBFromMongo using the mongoDB connection from an existed mongo-driver.
+//
+//	var client *mongo.Client
+//	...
+//	database := "example"
+//	db := sutando.NewDBFromMongo(ctx, client, database)
 func NewDBFromMongo(ctx context.Context, client *mongo.Client, database string) DB {
 	return &sutandoDB{client, database}
 }
@@ -144,22 +151,6 @@ func (s *sutandoDB) GetDriverDB() *mongo.Database {
 
 func (s *sutandoDB) Collection(name string, opts ...*options.CollectionOptions) builder {
 	return builder{col: s.client.Database(s.db).Collection(name, opts...)}
-}
-
-func (s *sutandoDB) ExecInsert(ctx context.Context, i inserting) (insertOneResult, insertManyResult, error) {
-	return i.Exec(ctx)
-}
-
-func (s *sutandoDB) ExecFind(ctx context.Context, f finding, p any) error {
-	return f.Exec(ctx, p)
-}
-
-func (s *sutandoDB) ExecUpdate(ctx context.Context, u updating, upsert bool) (updateResult, error) {
-	return u.Exec(ctx, upsert)
-}
-
-func (s *sutandoDB) ExecDelete(ctx context.Context, d deleting) (deleteResult, error) {
-	return d.Exec(ctx)
 }
 
 func (s *sutandoDB) Disconnect(ctx context.Context) error {

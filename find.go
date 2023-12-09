@@ -65,11 +65,6 @@ func (f *find) LessOrEqual(key string, value any) finding {
 	return f
 }
 
-func (f *find) Bitwise(key string, value any) finding {
-	f.q.Bitwise(key, value)
-	return f
-}
-
 func (f *find) Contain(key string, value ...any) finding {
 	f.q.Contain(key, value...)
 	return f
@@ -91,7 +86,7 @@ func (f *find) Regex(key string, regex string, opt ...option.Regex) finding {
 }
 
 func (f *find) First() finding {
-	f.q.First()
+	f.q.first()
 	return f
 }
 
@@ -121,16 +116,16 @@ func (f *find) Skip(i int64) finding {
 
 func (f *find) Exec(ctx context.Context, p any) error {
 	if reflect.TypeOf(p).Kind() != reflect.Pointer {
-		return errors.New("object to find should be a pointer")
+		return errors.New("mongo: object to find should be a pointer")
 	}
 	kind := reflect.TypeOf(p).Elem().Kind()
 	if kind == reflect.Array {
-		return errors.New("object to find cannot be an array")
+		return errors.New("mongo: object to find cannot be an array")
 	}
 
 	if kind != reflect.Slice {
 		if !f.q.isOne() {
-			return errors.New("find too many results! use query with 'First' to find one result")
+			return errors.New("mongo: find too many results! use query with 'First' to find one result")
 		}
 		return f.execFindOne(ctx, p)
 	}

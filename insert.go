@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type insert struct {
@@ -59,16 +58,6 @@ func (ins *insert) build() []any {
 	return result
 }
 
-func (ins *insert) optionOne() []*options.InsertOneOptions {
-	// TODO: Implement me
-	return nil
-}
-
-func (ins *insert) optionMany() []*options.InsertManyOptions {
-	// TODO: Implement me
-	return nil
-}
-
 func (ins *insert) Exec(ctx context.Context) (insertOneResult, insertManyResult, error) {
 	var (
 		err  error
@@ -78,12 +67,19 @@ func (ins *insert) Exec(ctx context.Context) (insertOneResult, insertManyResult,
 	objects := ins.build()
 	switch len(objects) {
 	case 0:
-		return one, many, errors.New("object to insert should be pointer")
+		return one, many, errors.New("mongo: object to insert should be pointer")
 	case 1:
-		one, err = ins.col.InsertOne(ctx, objects[0], ins.optionOne()...)
-		return one, many, err
+		one, err = ins.col.InsertOne(ctx, objects[0])
+		return one, many, ins.wrapDuplicateKeyErr(err)
 	default:
-		many, err = ins.col.InsertMany(ctx, objects, ins.optionMany()...)
-		return one, many, err
+		many, err = ins.col.InsertMany(ctx, objects)
+		return one, many, ins.wrapDuplicateKeyErr(err)
 	}
+}
+
+func (ins *insert) wrapDuplicateKeyErr(err error) error {
+	if mongo.IsDuplicateKeyError(err) {
+		return ErrDuplicateKey
+	}
+	return err
 }
