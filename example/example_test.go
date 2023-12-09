@@ -55,7 +55,7 @@ func testInstant(db sutando.DB, collection string) error {
 	defer cancel()
 
 	col := db.Collection(collection)
-	defer db.GetDriverDB().Collection(collection).Drop(ctx)
+	defer col.Drop(ctx)
 
 	_, _ = col.Delete().Exec(ctx)
 

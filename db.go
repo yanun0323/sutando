@@ -23,11 +23,11 @@ var (
 )
 
 type DB interface {
-	// GetDriver returns mongo client diver.
-	GetDriver() *mongo.Client
+	// RawClient returns the raw mongo client diver.
+	RawClient() *mongo.Client
 
-	// GetDriverDB returns mongo client diver database.
-	GetDriverDB() *mongo.Database
+	// RawDatabase returns the raw mongo database diver.
+	RawDatabase() *mongo.Database
 
 	// Collection gets a handle for a collection with the given name configured with the given CollectionOptions.
 	//
@@ -141,11 +141,11 @@ func NewDBFromMongo(ctx context.Context, client *mongo.Client, database string) 
 	return &sutandoDB{client, database}
 }
 
-func (s *sutandoDB) GetDriver() *mongo.Client {
+func (s *sutandoDB) RawClient() *mongo.Client {
 	return s.client
 }
 
-func (s *sutandoDB) GetDriverDB() *mongo.Database {
+func (s *sutandoDB) RawDatabase() *mongo.Database {
 	return s.client.Database(s.db)
 }
 
