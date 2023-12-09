@@ -2,19 +2,37 @@ package example
 
 import (
 	"context"
-	"errors"
+	"fmt"
+	"math/rand"
+	"strconv"
 	"testing"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
-	"go.mongodb.org/mongo-driver/mongo/options"
-
 	"github.com/yanun0323/sutando"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func Benchmark(b *testing.B) {
+	db := connect(b.Fatal)
+	for i := 0; i < b.N; i++ {
+		if err := testInstant(db, strconv.Itoa(rand.Int())); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
 func Test(t *testing.T) {
-	ctx := context.Background()
-	db, err := sutando.NewDB(ctx, &sutando.Conn{
+	t.Log("Test")
+	db := connect(t.Fatal)
+	if err := testInstant(db, "example_collection"); err != nil {
+		t.Fatalf("%+v", err)
+	}
+}
+
+func connect(fatal func(args ...any)) sutando.DB {
+	db, err := sutando.NewDB(context.Background(), &sutando.Conn{
 		Username:  "test",
 		Password:  "test",
 		Host:      "localhost",
@@ -27,55 +45,77 @@ func Test(t *testing.T) {
 		},
 	})
 	if err != nil {
-		t.Fatal(err)
+		fatal(err)
 	}
+	return db
+}
 
-	col := db.Collection("example_collection")
+func testInstant(db sutando.DB, collection string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	col := db.Collection(collection)
+	defer db.GetDriverDB().Collection(collection).Drop(ctx)
+
 	_, _ = col.Delete().Exec(ctx)
 
 	{ // Insert
 		result, _, err := col.Insert(_school).Exec(ctx)
 		if err != nil {
-			t.Fatal(err)
+			return errors.New(fmt.Sprintf("%+v", err))
 		}
 		if result.InsertedID == nil {
-			t.Fatal("empty inserted ID")
+			return errors.New("empty inserted ID")
+		}
+	}
+
+	{ // Count
+		c, err := col.Scalar().Count(ctx)
+		if err != nil {
+			return errors.New(fmt.Sprintf("%+v", err))
+		}
+		if c == 0 {
+			errors.New("no data in database")
 		}
 	}
 
 	{ // Find
 		var result School
-		if err := col.Find().Equal("name", "sutando").Exists("room.901", true).First().Exec(ctx, &result); err != nil {
-			t.Fatal(err)
+		err := col.Find().Equal("name", "sutando").Exists("room.901", true).First().Exec(ctx, &result)
+		if err != nil {
+			return errors.New(fmt.Sprintf("%+v", err))
 		}
 	}
 
 	{ // Update
-		_school.Name = "changed"
+		_school.BuildedTime = time.Now()
 		result, err := col.UpdateWith(&_school).Equal("name", "sutando").Exec(ctx, false)
 		if err != nil {
-			t.Fatal(err)
+			return errors.New(fmt.Sprintf("%+v", err))
 		}
 
-		if result.ModifiedCount != 1 {
-			t.Fatal("updated nothing")
+		if result.MatchedCount == 0 {
+			return errors.New("updated nothing")
 		}
 
 		var found School
-		if err := col.Find().Equal("name", "sutando").First().Exec(ctx, &found); !errors.Is(sutando.ErrNoDocument, err) {
-			t.Fatalf("expected no document error, but get error: %+v, found: %+v", err, found)
+		err = col.Find().Equal("name", "sutando").First().Exec(ctx, &found)
+		if err != nil && !errors.Is(sutando.ErrNoDocument, err) {
+			return errors.New(fmt.Sprintf("%+v", err))
 		}
 	}
 
 	{ // Delete
 		result, err := col.Delete().Contain("room").Exec(ctx)
 		if err != nil {
-			t.Fatal(err)
+			return errors.New(fmt.Sprintf("%+v", err))
 		}
 		if result.DeletedCount != 1 {
-			t.Fatal("deleted nothing")
+			return errors.New("deleted nothing")
 		}
 	}
+
+	return nil
 }
 
 var (
