@@ -2,17 +2,30 @@ package example
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
-	"go.mongodb.org/mongo-driver/mongo/options"
-
 	"github.com/yanun0323/sutando"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func Benchmark(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		if err := testInstant(); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
 func Test(t *testing.T) {
+	if err := testInstant(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func testInstant() error {
 
 	ctx := context.Background()
 	db, err := sutando.NewDB(ctx, &sutando.Conn{
@@ -28,7 +41,7 @@ func Test(t *testing.T) {
 		},
 	})
 	if err != nil {
-		t.Fatal(err)
+		return (err)
 	}
 
 	col := db.Collection("example_collection")
@@ -37,17 +50,17 @@ func Test(t *testing.T) {
 	{ // Insert
 		result, _, err := col.Insert(_school).Exec(ctx)
 		if err != nil {
-			t.Fatal(err)
+			return (err)
 		}
 		if result.InsertedID == nil {
-			t.Fatal("empty inserted ID")
+			return errors.New("empty inserted ID")
 		}
 	}
 
 	{ // Find
 		var result School
 		if err := col.Find().Equal("name", "sutando").Exists("room.901", true).First().Exec(ctx, &result); err != nil {
-			t.Fatal(err)
+			return err
 		}
 	}
 
@@ -55,28 +68,30 @@ func Test(t *testing.T) {
 		_school.Name = "changed"
 		result, err := col.UpdateWith(&_school).Equal("name", "sutando").Exec(ctx, false)
 		if err != nil {
-			t.Fatal(err)
+			return err
 		}
 
 		if result.ModifiedCount != 1 {
-			t.Fatal("updated nothing")
+			return errors.New("updated nothing")
 		}
 
 		var found School
 		if err := col.Find().Equal("name", "sutando").First().Exec(ctx, &found); !errors.Is(sutando.ErrNoDocument, err) {
-			t.Fatalf("expected no document error, but get error: %+v, found: %+v", err, found)
+			return err
 		}
 	}
 
 	{ // Delete
 		result, err := col.Delete().Contain("room").Exec(ctx)
 		if err != nil {
-			t.Fatal(err)
+			return err
 		}
 		if result.DeletedCount != 1 {
-			t.Fatal("deleted nothing")
+			return errors.New("deleted nothing")
 		}
 	}
+
+	return nil
 }
 
 var (
