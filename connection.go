@@ -8,7 +8,7 @@ import (
 )
 
 type Connection interface {
-	DSN(cfg *tls.Config) (string, bool) /* string: dsn, bool: isPem */
+	DSN(cfg *tls.Config) (dns string, isPem bool)
 	Database() string
 	SetupClientOptions(*options.ClientOptions)
 }
@@ -17,8 +17,8 @@ type Conn struct {
 	Username  string
 	Password  string
 	Host      string
-	Port      uint /* leave blank if you already add port in host or using SRV*/
-	DB        string
+	Port      uint   /* leave blank if you already add port in host or using SRV*/
+	DB        string /* database name */
 	Pem       string /* optional */
 	AdminAuth bool
 	Srv       bool

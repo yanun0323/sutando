@@ -2,6 +2,7 @@ package example
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -30,6 +31,21 @@ func Test(t *testing.T) {
 		t.Fatalf("%+v", err)
 	}
 }
+
+var _ sutando.Connection = (*testStruct)(nil)
+
+type testStruct struct {
+}
+
+func (ts *testStruct) DSN(cfg *tls.Config) (string, bool) /* string: dsn, bool: isPem */ {
+	return "", true
+}
+
+func (ts *testStruct) Database() string {
+	return ""
+}
+
+func (ts *testStruct) SetupClientOptions(*options.ClientOptions) {}
 
 func connect(fatal func(args ...any)) sutando.DB {
 	db, err := sutando.NewDB(context.Background(), &sutando.Conn{
