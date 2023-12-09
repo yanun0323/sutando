@@ -17,53 +17,40 @@ type Conn struct {
 	Username  string
 	Password  string
 	Host      string
-	Port      uint   /* leave blank if you already add port in host or using SRV*/
+	Port      uint   /* leave blank if you already add port in host */
 	DB        string /* database name */
 	Pem       string /* optional */
 	AdminAuth bool
-	Srv       bool
 
 	ClientOptionsHandler func(*options.ClientOptions)
 }
 
 func (c Conn) DSN(cfg *tls.Config) (string, bool) {
-	prefix := "mongodb:"
-	suffix := ""
-	if c.Srv {
-		prefix = "mongodb+srv:"
+	host := c.Host
+	if c.Port != 0 {
+		host = fmt.Sprintf("%s:%d", c.Host, c.Port)
 	}
 
-	if c.AdminAuth {
-		suffix = "?authSource=admin"
-	}
-
-	pem := cfg.RootCAs.AppendCertsFromPEM([]byte(c.Pem))
-	if pem {
-		suffix = "?ssl=true&replicaSet=rs0&readpreference=secondaryPreferred"
-	}
-
-	dsn := fmt.Sprintf("%s//%s:%s@%s:%d/%s%s",
-		prefix,
+	sf, pem := suffix(c.AdminAuth, cfg, c.Pem)
+	return fmt.Sprintf("mongodb://%s:%s@%s/%s%s",
 		c.Username,
 		c.Password,
-		c.Host,
-		c.Port,
+		host,
 		c.DB,
-		suffix,
-	)
+		sf,
+	), pem
+}
 
-	if c.Srv || c.Port == 0 {
-		dsn = fmt.Sprintf("%s//%s:%s@%s/%s%s",
-			prefix,
-			c.Username,
-			c.Password,
-			c.Host,
-			c.DB,
-			suffix,
-		)
+func suffix(adminAuth bool, cfg *tls.Config, pem string) (string, bool) {
+	if cfg.RootCAs.AppendCertsFromPEM([]byte(pem)) {
+		return "?ssl=true&replicaSet=rs0&readpreference=secondaryPreferred", true
 	}
 
-	return dsn, pem
+	if adminAuth {
+		return "?authSource=admin", false
+	}
+
+	return "", false
 }
 
 func (c Conn) Database() string {
@@ -71,6 +58,38 @@ func (c Conn) Database() string {
 }
 
 func (c Conn) SetupClientOptions(opt *options.ClientOptions) {
+	if c.ClientOptionsHandler != nil {
+		c.ClientOptionsHandler(opt)
+	}
+}
+
+type ConnSrv struct {
+	Username  string
+	Password  string
+	Host      string
+	DB        string /* database name */
+	Pem       string /* optional */
+	AdminAuth bool
+
+	ClientOptionsHandler func(*options.ClientOptions)
+}
+
+func (c ConnSrv) DSN(cfg *tls.Config) (string, bool) {
+	sf, pem := suffix(c.AdminAuth, cfg, c.Pem)
+	return fmt.Sprintf("mongodb+srv://%s:%s@%s/%s%s",
+		c.Username,
+		c.Password,
+		c.Host,
+		c.DB,
+		sf,
+	), pem
+}
+
+func (c ConnSrv) Database() string {
+	return c.DB
+}
+
+func (c ConnSrv) SetupClientOptions(opt *options.ClientOptions) {
 	if c.ClientOptionsHandler == nil {
 		return
 	}

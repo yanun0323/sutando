@@ -32,7 +32,6 @@ func (su *baseSuite) initDB() DB {
 		DB:        "sutando",
 		AdminAuth: true,
 		Pem:       "",
-		Srv:       false,
 	})
 	su.Require().NoError(err)
 	su.Require().NotNil(s)
@@ -66,13 +65,12 @@ func (su *dbSuite) TestSrvGood() {
 	if os.Getenv("TEST_SRV") != "1" {
 		return
 	}
-	s, err := NewDB(su.ctx, Conn{
+	s, err := NewDB(su.ctx, ConnSrv{
 		Username:  "test",
 		Password:  "test",
 		Host:      "sutando.mongodb.net",
 		DB:        "test",
 		AdminAuth: true,
-		Srv:       true,
 		ClientOptionsHandler: func(opts *options.ClientOptions) {
 			opts.SetConnectTimeout(3 * time.Second)
 			opts.SetTimeout(3 * time.Second)

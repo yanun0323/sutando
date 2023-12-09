@@ -74,21 +74,24 @@ type sutandoDB struct {
 //		Port:      27017,
 //		DB:        "example",
 //		AdminAuth: true,
-//		Pem:       "",		// optional
+//		Pem:       "",
 //		ClientOptionsHandler: func(opts *options.ClientOptions) {
-//			// do something...
+//			opts.SetConnectTimeout(5 * time.Second)
+//			opts.SetTimeout(15 * time.Second)
 //		},
 //	})
 //
 //	// connect using SRV url.
-//	db, err := sutando.NewDB(ctx, sutando.Conn{
+//	db, err := sutando.NewDB(ctx, sutando.ConnSrv{
 //		Username:  "example",
 //		Password:  "example",
 //		Host:      "example.mongo.net",
 //		DB:        "example",
-//		Srv:       true,
+//		AdminAuth: true,
+//		Pem:       "",
 //		ClientOptionsHandler: func(opts *options.ClientOptions) {
-//			// do something...
+//			opts.SetConnectTimeout(5 * time.Second)
+//			opts.SetTimeout(15 * time.Second)
 //		},
 //	})
 func NewDB(ctx context.Context, c Connection) (DB, error) {
