@@ -152,7 +152,7 @@ func (f *find) execFindOne(ctx context.Context, p any) error {
 
 	err := result.Decode(p)
 	if err != nil {
-		return errors.Errorf("decode, err: %+v", err)
+		return errors.Errorf("mongo: decode document error: %+v", err)
 	}
 
 	return nil
@@ -161,13 +161,13 @@ func (f *find) execFindOne(ctx context.Context, p any) error {
 func (f *find) execFindMany(ctx context.Context, q finding, p any) error {
 	cursor, err := f.q.col().Find(ctx, f.q.build(), f.optMany)
 	if err != nil {
-		return errors.Errorf("find, err: %+v", err)
+		return errors.Errorf("mongo: invoke finding error: %+v", err)
 	}
 	defer cursor.Close(ctx)
 
 	err = cursor.All(ctx, p)
 	if err != nil {
-		return errors.Errorf("cursor decode, err: %+v", err)
+		return errors.Errorf("mongo: decode using cursor error: %+v", err)
 	}
 	return nil
 }
