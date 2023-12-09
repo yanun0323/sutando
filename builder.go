@@ -10,11 +10,11 @@ type builder struct {
 	col *mongo.Collection
 }
 
+// TODO: Implement me
 // withCoder sets custom coder of types/structure.
-func (b builder) withCoder() *builder {
-	// TODO: Implement me
-	return &b
-}
+// func (b builder) withCoder() *builder {
+// 	return &b
+// }
 
 // Insert inserts document.
 //
