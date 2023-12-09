@@ -10,40 +10,108 @@ type builder struct {
 	col *mongo.Collection
 }
 
-// TODO: Implement me
+// TODO: custom coder
 // withCoder sets custom coder of types/structure.
 // func (b builder) withCoder() *builder {
 // 	return &b
 // }
 
-// Insert inserts document.
+// Insert provides the operation to insert documents.
 //
-//	err := db.Collection("col_name").Insert(&obj).Exec(ctx)
+//	// insert one
+//	resultOne, _, err := db.Collection("col_name").
+//		Insert(&obj).
+//		Exec(ctx)
+//
+//	// insert many
+//	_, resultMany, err := db.Collection("col_name").
+//		Insert(&obj1, &obj2, &obj3).
+//		Exec(ctx)
 func (b builder) Insert(p ...any) inserting {
 	return newInsert(b.col, newBsonEncoder(), p...)
 }
 
-// Update updates document with model. (updates all fields, including empty fields)
+// Update provides the operation to update documents with structure. (updates all fields, including empty fields)
+//
+//	result, err := db.Collection("col_name").
+//		UpdateWith(&obj).
+//		Equal("name", "yanun").
+//		Exists("age", true).
+//		Exec(ctx, true)
 func (b builder) UpdateWith(p any) updating {
 	return newUpdate(b.col, newBsonEncoder(), p)
 }
 
-// Update updates document with set.
+// Update provides the operation to update documents with set.
+//
+//	// update one
+//	result, err := db.Collection("col_name").
+//		Update().
+//		Equal("name", "yanun").
+//		Exists("age", true).
+//		Set("name", "new_name").
+//		First().
+//		Exec(ctx, true)
+//
+//	// update many
+//	result, err := db.Collection("col_name").
+//		Update().
+//		Equal("name", "yanun").
+//		Exists("age", true).
+//		Set("name", "new_name").
+//		Exec(ctx, true)
 func (b builder) Update() updating {
 	return newUpdate(b.col, newBsonEncoder(), nil)
 }
 
-// Find finds document.
+// Find provides the operation to find documents.
+//
+//	// find one
+//	err := db.Collection("col_name").
+//		Find().
+//		Equal("name", "yanun").
+//		Exists("age", true).
+//		First().
+//		Exec(ctx, &elem)
+//
+//	// find many
+//	err := db.Collection("col_name").
+//		Find().
+//		Equal("name", "yanun").
+//		Exists("age", true).
+//		Exec(ctx, &elems)
 func (b builder) Find() finding {
 	return newFind(b.col)
 }
 
-// Delete deletes document.
+// Delete provides the operation to delete documents.
+//
+//	// delete one
+//	err := db.Collection("col_name").
+//		Delete().
+//		Equal("name", "yanun").
+//		Exists("age", true).
+//		First().
+//		Exec(ctx)
+//
+//	// delete many
+//	err := db.Collection("col_name").
+//		Delete().
+//		Equal("name", "yanun").
+//		Exists("age", true).
+//		Exec(ctx)
 func (b builder) Delete() deleting {
 	return newDelete(b.col)
 }
 
-// Scalar scalars document.
+// Scalar provides the operation to scalars documents.
+//
+//	// count
+//	count, err := db.Collection("col_name").
+//		Scalar().
+//		Equal("name", "yanun").
+//		Exists("age", true).
+//		Count(ctx, "optional_index1", "optional_index2")
 func (b builder) Scalar() querying {
 	return newQuery(b.col)
 }

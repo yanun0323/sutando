@@ -2,8 +2,6 @@ package example
 
 import (
 	"context"
-	"crypto/tls"
-	"fmt"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -31,21 +29,6 @@ func Test(t *testing.T) {
 		t.Fatalf("%+v", err)
 	}
 }
-
-var _ sutando.Connection = (*testStruct)(nil)
-
-type testStruct struct {
-}
-
-func (ts *testStruct) DSN(cfg *tls.Config) (string, bool) /* string: dsn, bool: isPem */ {
-	return "", true
-}
-
-func (ts *testStruct) Database() string {
-	return ""
-}
-
-func (ts *testStruct) SetupClientOptions(*options.ClientOptions) {}
 
 func connect(fatal func(args ...any)) sutando.DB {
 	db, err := sutando.NewDB(context.Background(), &sutando.Conn{
@@ -78,7 +61,7 @@ func testInstant(db sutando.DB, collection string) error {
 	{ // Insert
 		result, _, err := col.Insert(_school).Exec(ctx)
 		if err != nil {
-			return errors.New(fmt.Sprintf("%+v", err))
+			return errors.Errorf("%+v", err)
 		}
 		if result.InsertedID == nil {
 			return errors.New("empty inserted ID")
@@ -88,7 +71,7 @@ func testInstant(db sutando.DB, collection string) error {
 	{ // Count
 		c, err := col.Scalar().Count(ctx)
 		if err != nil {
-			return errors.New(fmt.Sprintf("%+v", err))
+			return errors.Errorf("%+v", err)
 		}
 		if c == 0 {
 			errors.New("no data in database")
@@ -99,7 +82,7 @@ func testInstant(db sutando.DB, collection string) error {
 		var result School
 		err := col.Find().Equal("name", "sutando").Exists("room.901", true).First().Exec(ctx, &result)
 		if err != nil {
-			return errors.New(fmt.Sprintf("%+v", err))
+			return errors.Errorf("%+v", err)
 		}
 	}
 
@@ -107,7 +90,7 @@ func testInstant(db sutando.DB, collection string) error {
 		_school.BuildedTime = time.Now()
 		result, err := col.UpdateWith(&_school).Equal("name", "sutando").Exec(ctx, false)
 		if err != nil {
-			return errors.New(fmt.Sprintf("%+v", err))
+			return errors.Errorf("%+v", err)
 		}
 
 		if result.MatchedCount == 0 {
@@ -117,14 +100,14 @@ func testInstant(db sutando.DB, collection string) error {
 		var found School
 		err = col.Find().Equal("name", "sutando").First().Exec(ctx, &found)
 		if err != nil && !errors.Is(sutando.ErrNoDocument, err) {
-			return errors.New(fmt.Sprintf("%+v", err))
+			return errors.Errorf("%+v", err)
 		}
 	}
 
 	{ // Delete
 		result, err := col.Delete().Contain("room").Exec(ctx)
 		if err != nil {
-			return errors.New(fmt.Sprintf("%+v", err))
+			return errors.Errorf("%+v", err)
 		}
 		if result.DeletedCount != 1 {
 			return errors.New("deleted nothing")
