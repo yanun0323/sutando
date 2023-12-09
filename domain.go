@@ -3,6 +3,7 @@ package sutando
 import (
 	"context"
 
+	"github.com/yanun0323/sutando/option"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -30,7 +31,7 @@ type updating interface {
 	Contain(key string, value ...any) updating
 	In(key string, value ...any) updating
 	NotIn(key string, value ...any) updating
-	Regex(key string, regex string) updating
+	Regex(key string, regex string, opt ...option.Regex) updating
 	First() updating
 
 	/*
@@ -57,7 +58,7 @@ type scalaring interface {
 	Contain(key string, value ...any) scalaring
 	In(key string, value ...any) scalaring
 	NotIn(key string, value ...any) scalaring
-	Regex(key string, regex string) scalaring
+	Regex(key string, regex string, opt ...option.Regex) scalaring
 
 	Count(ctx context.Context, index ...string) (int64, error)
 }
@@ -77,7 +78,7 @@ type querying interface {
 	Contain(key string, value ...any) querying
 	In(key string, value ...any) querying
 	NotIn(key string, value ...any) querying
-	Regex(key string, regex string) querying
+	Regex(key string, regex string, opt ...option.Regex) querying
 	First() querying
 }
 
@@ -94,7 +95,7 @@ type finding interface {
 	Contain(key string, value ...any) finding
 	In(key string, value ...any) finding
 	NotIn(key string, value ...any) finding
-	Regex(key string, regex string) finding
+	Regex(key string, regex string, opt ...option.Regex) finding
 	First() finding
 	// Sort return sorted elements, value means [key:asc]
 	Sort(value map[string]bool) finding
@@ -117,7 +118,7 @@ type deleting interface {
 	Contain(key string, value ...any) deleting
 	In(key string, value ...any) deleting
 	NotIn(key string, value ...any) deleting
-	Regex(key string, regex string) deleting
+	Regex(key string, regex string, opt ...option.Regex) deleting
 	First() deleting
 
 	Exec(context.Context) (deleteResult, error)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 
+	"github.com/yanun0323/sutando/option"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -94,8 +95,8 @@ func (u *update) NotIn(key string, value ...any) updating {
 	return u
 }
 
-func (u *update) Regex(key string, regex string) updating {
-	u.q.Regex(key, regex)
+func (u *update) Regex(key string, regex string, opt ...option.Regex) updating {
+	u.q.Regex(key, regex, opt...)
 	return u
 }
 

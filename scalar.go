@@ -3,6 +3,7 @@ package sutando
 import (
 	"context"
 
+	"github.com/yanun0323/sutando/option"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -77,8 +78,8 @@ func (s *scalar) NotIn(key string, value ...any) scalaring {
 	return s
 }
 
-func (s *scalar) Regex(key string, regex string) scalaring {
-	s.q.Regex(key, regex)
+func (s *scalar) Regex(key string, regex string, opt ...option.Regex) scalaring {
+	s.q.Regex(key, regex, opt...)
 	return s
 }
 
