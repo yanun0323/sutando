@@ -168,6 +168,8 @@ func (f *find) execFindMany(ctx context.Context, q finding, p any) error {
 	if err != nil {
 		return errors.Errorf("find, err: %+v", err)
 	}
+	defer cursor.Close(ctx)
+
 	err = cursor.All(ctx, p)
 	if err != nil {
 		return errors.Errorf("cursor decode, err: %+v", err)
