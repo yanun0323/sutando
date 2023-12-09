@@ -12,7 +12,6 @@
 - GreaterOrEqual
 - Less
 - LessOrEqual
-- Bitwise
 - Contain
 - In
 - NotIn
@@ -27,7 +26,7 @@
 ### Installation
 
 ```shell
-$ go get -u github.com/yanun0323/sutando
+$ go get -u github.com/yanun0323/sutando@latest
 ```
 
 ### Example
@@ -36,31 +35,33 @@ $ go get -u github.com/yanun0323/sutando
 
 - Create a new connection
 ```go
-    // Using Host and Port
+    // connect using host and port.
     db, err := sutando.NewDB(ctx, sutando.Conn{
-        Username:  "example",
-        Password:  "example",
-        Host:      "example",
-        Port:      27017,	// leave blank if there's port in host
-        DB:        "example",
-        AdminAuth: true,
-        Pem:       "",		// optional
-        ClientOptionsHandler func(opts *options.ClientOptions) {
-            // do something...
-        },
+    	Username:  "example",
+    	Password:  "example",
+    	Host:      "example",
+    	Port:      27017,
+    	DB:        "example",
+    	AdminAuth: true,
+    	Pem:       "",
+    	ClientOptionsHandler: func(opts *options.ClientOptions) {
+    		opts.SetConnectTimeout(5 * time.Second)
+    		opts.SetTimeout(15 * time.Second)
+    	},
     })
 
-    // Using SRV URL
-    db, err := sutando.NewDB(ctx, sutando.Conn{
-        Username:  "example",
-        Password:  "example",
-        Host:      "example.mongo.net",
-        DB:        "example",
-        AdminAuth: true,
-        Srv:       true,
-        ClientOptionsHandler func(opts *options.ClientOptions) {
-            // do something...
-        },
+    // connect using SRV url.
+    db, err := sutando.NewDB(ctx, sutando.ConnSrv{
+    	Username:  "example",
+    	Password:  "example",
+    	Host:      "example.mongo.net",
+    	DB:        "example",
+    	AdminAuth: true,
+    	Pem:       "",
+    	ClientOptionsHandler: func(opts *options.ClientOptions) {
+    		opts.SetConnectTimeout(5 * time.Second)
+    		opts.SetTimeout(15 * time.Second)
+    	},
     })
 ```
 
@@ -94,6 +95,17 @@ $ go get -u github.com/yanun0323/sutando
     err := db.Disconnect(ctx)
 ```
 
+#### Drop
+```go
+    err := db.Collection("Collection").Drop(ctx)
+```
+
+#### Scalar
+```go
+    // Count
+    count, err := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).Count(ctx, "_index_id_")
+```
+
 #### Find
 ```go
     resultOne := struct{}
@@ -101,12 +113,6 @@ $ go get -u github.com/yanun0323/sutando
 
     resultMany := []struct{}
     err := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).Exec(ctx, &resultMany)
-```
-
-#### Scalar
-```go
-    // Count
-    count, err := db.Collection("Collection").Find().Equal("Name", "sutando").Greater("Number", 300).Count(ctx, "_index_id_")
 ```
 
 #### Create
@@ -122,12 +128,14 @@ $ go get -u github.com/yanun0323/sutando
 
     resultMany, err := db.Collection("Collection").UpdateWith(&data).Equal("Field", "sutando").Exec(su.ctx, false)
 ```
+
 #### Update with Set
 ```go
     resultOne, err := db.Collection("Collection").Update().Equal("Field", "sutando").First().Set("Field", "hello").Exec(su.ctx, false)
 
     resultMany, err := db.Collection("Collection").Update().Equal("Field", "sutando").Set("Field", "hello").Exec(su.ctx, false)
 ```
+
 #### Delete
 ```go
     resultOne, err := db.Collection("Collection").Delete().Equal("Field", "sutando").First().Exec(su.ctx)
@@ -137,19 +145,20 @@ $ go get -u github.com/yanun0323/sutando
 
 #### Use original mongo-driver instance
 ```go
-    client := db.GetDriver()
-    db := db.GetDriverDB()
+    client := db.RawClient()
+    database := db.RawDatabase()
 ``` 
 
 ## Changelog
 
 |Version|Description
 |:-:|:-
-|1.3.7| - Added `Scalar` <br> - Moved `Count` from `Query` to `Scalar`
-|1.3.6| - Added `Regex` into `Update` `Find` `Delete` `Query`
+|1.4.0| - Remove all db execute functions <br> - Removed `Query` <br> - Removed method `Bitwise` <br> - Added `ConnSrv` connection structure <br> - Added method `Drop` into `Collection()` method chain <br> - Added comment for all methods <br> - Added `option` parameter into `Regex` method <br> - Rewrite the structure fo filters <br> - Renamed `GetDriver` to `RawClient` <br> - Renamed `GetDriverDB` to `RawDatabase` <br> - Fixed after invoking `Find`, didn't call `defer cursor.Close()`
+|1.3.7| - Added `Scalar` <br> - Moved method `Count` from `Query` to `Scalar`
+|1.3.6| - Added method `Regex` into `Update` `Find` `Delete` `Query`
 |1.3.5| - Fixed `Find` no document mismatch error
-|1.3.4| - Added `Count` into `Query`
-|1.3.3| - Added `Sort` `Limit` `Skip` into `Find`
+|1.3.4| - Added method `Count` into `Query`
+|1.3.3| - Added methods `Sort` `Limit` `Skip` into `Find`
 |1.3.2| - Added deprecated comment for `DB`
 |1.3.1| - Renamed `OptionHandler` to `ClientOptionsHandler` <br> - Renamed `SetupOption` to `SetupClientOptions`
 |1.3.0| - Added `Execute Chain` <br> - Fixed error when input only one slice in insert function <br> - Fixed error when input only one param/slice in In/NotIn function <br> - Fixed `bson` `omitempty` supported <br> - Fixed embed structure lowercase Name issue <br> - Fixed map structure value lowercase Name issue <br> - Fixed array structure value lowercase Name issue <br> - Plan to remove db execute function in version 1.4.X
