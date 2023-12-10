@@ -12,11 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type insertOneResult *mongo.InsertOneResult
-type insertManyResult *mongo.InsertManyResult
-type updateResult *mongo.UpdateResult
-type deleteResult *mongo.DeleteResult
-
 var (
 	// ErrNoDocuments occurs when the operation
 	// that created the SingleResult did not return

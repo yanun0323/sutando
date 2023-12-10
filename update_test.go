@@ -24,7 +24,7 @@ func (su *updateSuite) BeforeTest(suiteName, testName string) {
 	data := mockData()
 	data.StructName = "Yanun"
 	q := su.db.Collection("update_suite").Insert(&data, &data, &data)
-	_, _, err = q.Exec(su.ctx)
+	_, err = q.Exec(su.ctx)
 	su.Require().NoError(err)
 }
 

@@ -117,9 +117,9 @@ $ go get -u github.com/yanun0323/sutando@latest
 
 #### Create
 ```go
-    resultOne, _, err := db.Collection("Collection").Insert(&obj).Exec(ctx)
+    result, err := db.Collection("Collection").Insert(&obj).Exec(ctx)
 
-    _, resultMany, err := db.Collection("Collection").Insert(&obj1, &obj2, &obj3).Exec(ctx)
+    result, err := db.Collection("Collection").Insert(&obj1, &obj2, &obj3).Exec(ctx)
 ```
     
 #### Update with Model (Will update all fields including empty fields)

@@ -10,6 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type updateResult *mongo.UpdateResult
+
 type update struct {
 	data bson.M
 	q    querying

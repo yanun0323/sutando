@@ -19,12 +19,12 @@ type builder struct {
 // Insert provides the operation to insert documents.
 //
 //	// insert one
-//	resultOne, _, err := db.Collection("col_name").
+//	result, err := db.Collection("col_name").
 //		Insert(&obj).
 //		Exec(ctx)
 //
 //	// insert many
-//	_, resultMany, err := db.Collection("col_name").
+//	result, err := db.Collection("col_name").
 //		Insert(&obj1, &obj2, &obj3).
 //		Exec(ctx)
 func (b builder) Insert(p ...any) inserting {

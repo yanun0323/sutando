@@ -80,7 +80,7 @@ func (su *deleteSuite) TestDeleteGood() {
 
 func (su *deleteSuite) insertData(db DB, data ...any) {
 	{
-		_, _, err := db.Collection(su.col).Insert(data...).Exec(su.ctx)
+		_, err := db.Collection(su.col).Insert(data...).Exec(su.ctx)
 		su.Require().NoError(err)
 	}
 }

@@ -113,15 +113,15 @@ func (su *dbSuite) TestCRUDGood() {
 	db := su.initDB()
 	{
 		data := mockData()
-		resultOne, _, err := db.Collection(su.col).Insert(&data).Exec(su.ctx)
+		result, err := db.Collection(su.col).Insert(&data).Exec(su.ctx)
 		su.Assert().NoError(err)
-		su.Assert().NotNil(resultOne)
-		su.T().Log("insert one ID: ", resultOne.InsertedID)
+		su.Assert().NotNil(result.InsertedIDs)
+		su.T().Log("insert one ID: ", result.InsertedIDs[0])
 
-		_, resultMany, err := db.Collection(su.col).Insert(&data, &data, &data).Exec(su.ctx)
+		result, err = db.Collection(su.col).Insert(&data, &data, &data).Exec(su.ctx)
 		su.Assert().NoError(err)
-		su.Assert().NotNil(resultMany)
-		su.T().Log("insert count: ", len(resultMany.InsertedIDs))
+		su.Assert().NotNil(result.InsertedIDs)
+		su.T().Log("insert count: ", len(result.InsertedIDs))
 
 	}
 
@@ -191,9 +191,9 @@ func (su *dbSuite) TestCRUDGood() {
 	}
 
 	{
-		resultOne, _, err := db.Collection(su.col).Insert(_defaultSettings).Exec(su.ctx)
+		result, err := db.Collection(su.col).Insert(_defaultSettings).Exec(su.ctx)
 		su.NoError(err)
-		su.NotEmpty(resultOne.InsertedID)
+		su.NotEmpty(result.InsertedIDs[0])
 	}
 
 	{
@@ -218,16 +218,16 @@ func (su *dbSuite) TestOldGood() {
 	{
 		data := mockData()
 		insOne := db.Collection(su.col).Insert(&data)
-		resultOne, _, err := insOne.Exec(su.ctx)
+		result, err := insOne.Exec(su.ctx)
 		su.Assert().NoError(err)
-		su.Assert().NotNil(resultOne)
-		su.T().Log("insert one ID: ", resultOne.InsertedID)
+		su.Assert().NotNil(result)
+		su.T().Log("insert one ID: ", result.InsertedIDs[0])
 
 		insMany := db.Collection(su.col).Insert(&data, &data, &data)
-		_, resultMany, err := insMany.Exec(su.ctx)
+		result, err = insMany.Exec(su.ctx)
 		su.Assert().NoError(err)
-		su.Assert().NotNil(resultMany)
-		su.T().Log("insert count: ", len(resultMany.InsertedIDs))
+		su.Assert().NotNil(result.InsertedIDs)
+		su.T().Log("insert count: ", len(result.InsertedIDs))
 
 	}
 

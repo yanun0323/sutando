@@ -11,7 +11,7 @@ import (
 type inserting interface {
 	// Exec executes inserting documents
 	// and return corresponding result of inserting.
-	Exec(context.Context) (insertOneResult, insertManyResult, error)
+	Exec(context.Context) (insertResult, error)
 }
 
 type updating interface {

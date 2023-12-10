@@ -26,7 +26,7 @@ func (su *scalarSuite) BeforeTest(suiteName, testName string) {
 	su.db = su.initDB()
 	data := mockData()
 	data.StructName = "Yanun"
-	_, _, err := su.db.Collection(su.col).Insert(&data, &data, &data).Exec(su.ctx)
+	_, err := su.db.Collection(su.col).Insert(&data, &data, &data).Exec(su.ctx)
 	su.Require().NoError(err)
 }
 

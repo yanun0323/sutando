@@ -32,31 +32,31 @@ func (su *insertSuite) TestInsertGood() {
 	data := mockData()
 	data.StructName = "Yanun"
 
-	resultOne, _, err := su.db.Collection(su.col).Insert(&data).Exec(su.ctx)
+	result, err := su.db.Collection(su.col).Insert(&data).Exec(su.ctx)
 	su.Require().NoError(err)
-	su.Require().NotNil(resultOne.InsertedID)
-	su.T().Log(resultOne.InsertedID)
+	su.Require().NotNil(result.InsertedIDs)
+	su.T().Log(result.InsertedIDs[0])
 
-	_, resultMany, err := su.db.Collection(su.col).Insert(&data, &data, &data).Exec(su.ctx)
+	result, err = su.db.Collection(su.col).Insert(&data, &data, &data).Exec(su.ctx)
 	su.Require().NoError(err)
-	su.Require().NotEmpty(resultMany.InsertedIDs)
-	su.T().Log(resultMany.InsertedIDs)
+	su.Require().NotEmpty(result.InsertedIDs)
+	su.T().Log(result.InsertedIDs)
 
 	dataSlice := []testStruct{data, data, data}
-	_, resultMany, err = su.db.Collection(su.col).Insert(dataSlice).Exec(su.ctx)
+	result, err = su.db.Collection(su.col).Insert(dataSlice).Exec(su.ctx)
 	su.Require().NoError(err)
-	su.Require().NotEmpty(resultMany.InsertedIDs)
-	su.T().Log(resultMany.InsertedIDs)
+	su.Require().NotEmpty(result.InsertedIDs)
+	su.T().Log(result.InsertedIDs)
 
 	{
-		resultOne, _, err := su.db.Collection(su.col).Insert(_defaultSettings).Exec(su.ctx)
+		result, err := su.db.Collection(su.col).Insert(_defaultSettings).Exec(su.ctx)
 		su.Require().NoError(err)
-		su.Require().NotNil(resultOne.InsertedID)
-		su.T().Log(resultOne.InsertedID)
+		su.Require().NotNil(result.InsertedIDs[0])
+		su.T().Log(result.InsertedIDs[0])
 
-		_, resultMany, err := su.db.Collection(su.col).Insert(_defaultSettings, _defaultSettings, _defaultSettings).Exec(su.ctx)
+		result, err = su.db.Collection(su.col).Insert(_defaultSettings, _defaultSettings, _defaultSettings).Exec(su.ctx)
 		su.Require().NoError(err)
-		su.Require().NotEmpty(resultMany.InsertedIDs)
-		su.T().Log(resultMany.InsertedIDs)
+		su.Require().NotEmpty(result.InsertedIDs)
+		su.T().Log(result.InsertedIDs)
 	}
 }

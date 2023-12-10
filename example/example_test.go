@@ -59,11 +59,11 @@ func testInstant(db sutando.DB, collection string) error {
 	_, _ = col.Delete().Exec(ctx)
 
 	{ // Insert
-		result, _, err := col.Insert(_school).Exec(ctx)
+		result, err := col.Insert(_school).Exec(ctx)
 		if err != nil {
 			return errors.Errorf("%+v", err)
 		}
-		if result.InsertedID == nil {
+		if len(result.InsertedIDs) == 0 {
 			return errors.New("empty inserted ID")
 		}
 	}

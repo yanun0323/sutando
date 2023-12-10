@@ -6,8 +6,28 @@ import (
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+var _zeroID = primitive.ObjectID{}
+
+type insertResult struct {
+	InsertedIDs []any
+}
+
+func newInsertedResult(count int, a ...any) insertResult {
+	ids := make([]any, 0, count)
+	ids = append(ids, a...)
+	if offset := count - len(ids); offset > 0 {
+		for i := 0; i < offset; i++ {
+			ids = append(ids, _zeroID)
+		}
+	}
+	return insertResult{
+		InsertedIDs: ids,
+	}
+}
 
 type insert struct {
 	col     *mongo.Collection
@@ -58,22 +78,18 @@ func (ins *insert) build() []any {
 	return result
 }
 
-func (ins *insert) Exec(ctx context.Context) (insertOneResult, insertManyResult, error) {
-	var (
-		err  error
-		one  insertOneResult
-		many insertManyResult
-	)
+func (ins *insert) Exec(ctx context.Context) (insertResult, error) {
 	objects := ins.build()
-	switch len(objects) {
+	objCount := len(objects)
+	switch objCount {
 	case 0:
-		return one, many, errors.New("mongo: object to insert should be pointer")
+		return insertResult{}, errors.New("mongo: object to insert should be pointer")
 	case 1:
-		one, err = ins.col.InsertOne(ctx, objects[0])
-		return one, many, ins.wrapDuplicateKeyErr(err)
+		one, err := ins.col.InsertOne(ctx, objects[0])
+		return newInsertedResult(objCount, one.InsertedID), ins.wrapDuplicateKeyErr(err)
 	default:
-		many, err = ins.col.InsertMany(ctx, objects)
-		return one, many, ins.wrapDuplicateKeyErr(err)
+		many, err := ins.col.InsertMany(ctx, objects)
+		return newInsertedResult(objCount, many.InsertedIDs...), ins.wrapDuplicateKeyErr(err)
 	}
 }
 
