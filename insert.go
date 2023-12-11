@@ -9,6 +9,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+type insertOneResult *mongo.InsertOneResult
+type insertManyResult *mongo.InsertManyResult
+
 type insert struct {
 	col     *mongo.Collection
 	data    []bson.M

@@ -8,6 +8,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type deleteResult *mongo.DeleteResult
+
 type delete struct {
 	q querying
 }
