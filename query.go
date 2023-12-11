@@ -19,7 +19,7 @@ type query struct {
 func newQuery(collection *mongo.Collection) querying {
 	return &query{
 		coll: collection,
-		f:    filter{d: bsonD()},
+		f:    filter{d: bson.D{}},
 	}
 }
 
@@ -32,7 +32,7 @@ func (q *query) col() *mongo.Collection {
 }
 
 func (q *query) Exists(key string, exists bool) querying {
-	return q.add(key, bsonM("$exists", exists))
+	return q.add(key, bson.M{"$exists": exists})
 }
 
 func (q *query) And(key string, value any) querying {
@@ -40,41 +40,41 @@ func (q *query) And(key string, value any) querying {
 }
 
 func (q *query) Equal(key string, value any) querying {
-	return q.add(key, bsonM("$eq", value))
+	return q.add(key, bson.M{"$eq": value})
 }
 
 func (q *query) NotEqual(key string, value ...any) querying {
 	if len(value) == 0 {
 		return q
 	}
-	return q.add(key, bsonM("$ne", purge(value))).Exists(key, true)
+	return q.add(key, bson.M{"$ne": purge(value)}).Exists(key, true)
 }
 
 func (q *query) Greater(key string, value any) querying {
-	return q.add(key, bsonM("$gt", value))
+	return q.add(key, bson.M{"$gt": value})
 }
 
 func (q *query) GreaterOrEqual(key string, value any) querying {
-	return q.add(key, bsonM("$gte", value))
+	return q.add(key, bson.M{"$gte": value})
 }
 
 func (q *query) Less(key string, value any) querying {
-	return q.add(key, bsonM("$lt", value))
+	return q.add(key, bson.M{"$lt": value})
 }
 
 func (q *query) LessOrEqual(key string, value any) querying {
-	return q.add(key, bsonM("$lte", value))
+	return q.add(key, bson.M{"$lte": value})
 }
 
 func (q *query) Bitwise(key string, value any) querying {
-	return q.add(key, bsonM("$bitsAllSet", value))
+	return q.add(key, bson.M{"$bitsAllSet": value})
 }
 
 func (q *query) Contain(key string, value ...any) querying {
 	if len(value) == 0 {
 		return q
 	}
-	return q.add(key, bsonM("$all", value))
+	return q.add(key, bson.M{"$all": value})
 }
 
 func (q *query) In(key string, value ...any) querying {
@@ -84,7 +84,7 @@ func (q *query) In(key string, value ...any) querying {
 	case 1:
 		rv := reflect.ValueOf(value[0])
 		if rv.Kind() != reflect.Slice {
-			return q.add(key, bsonM("$in", value))
+			return q.add(key, bson.M{"$in": value})
 		}
 		data := make([]any, 0, rv.Len())
 		for i := 0; i < rv.Len(); i++ {
@@ -92,7 +92,7 @@ func (q *query) In(key string, value ...any) querying {
 		}
 		return q.In(key, data...)
 	default:
-		return q.add(key, bsonM("$in", value))
+		return q.add(key, bson.M{"$in": value})
 	}
 }
 
@@ -103,7 +103,7 @@ func (q *query) NotIn(key string, value ...any) querying {
 	case 1:
 		rv := reflect.ValueOf(value[0])
 		if rv.Kind() != reflect.Slice {
-			return q.add(key, bsonM("$nin", value))
+			return q.add(key, bson.M{"$nin": value})
 		}
 		data := make([]any, 0, rv.Len())
 		for i := 0; i < rv.Len(); i++ {
@@ -111,13 +111,13 @@ func (q *query) NotIn(key string, value ...any) querying {
 		}
 		return q.NotIn(key, data...)
 	default:
-		return q.add(key, bsonM("$nin", value))
+		return q.add(key, bson.M{"$nin": value})
 	}
 }
 
 func (q *query) Regex(key string, regex string, opt ...option.Regex) querying {
 	if len(opt) == 0 || opt[0] == 0 {
-		return q.add(key, bsonM("$regex", regex))
+		return q.add(key, bson.M{"$regex": regex})
 	}
 	o := opt[0]
 	buf := make([]byte, 0, 4)
