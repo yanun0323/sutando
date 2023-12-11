@@ -9,3 +9,7 @@ type filter struct {
 func (f *filter) append(key string, val any) {
 	f.d = append(f.d, bson.E{Key: key, Value: val})
 }
+
+func (f *filter) appends(e ...bson.E) {
+	f.d = append(f.d, e...)
+}

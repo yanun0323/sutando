@@ -140,6 +140,11 @@ func (q *query) Regex(key string, regex string, opt ...option.Regex) querying {
 	return q.add(key, bson.M{"$regex": regex, "$options": string(buf)})
 }
 
+func (q *query) Bson(e ...bson.E) querying {
+	q.f.appends(e...)
+	return q
+}
+
 func (q *query) Count(ctx context.Context, index ...string) (int64, error) {
 	opt := options.Count()
 	if len(index) != 0 && len(index[0]) != 0 {

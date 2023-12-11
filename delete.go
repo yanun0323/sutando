@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/yanun0323/sutando/option"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -77,6 +78,11 @@ func (d *delete) NotIn(key string, value ...any) deleting {
 
 func (d *delete) Regex(key string, regex string, opt ...option.Regex) deleting {
 	d.q.Regex(key, regex, opt...)
+	return d
+}
+
+func (d *delete) Bson(e ...bson.E) deleting {
+	d.q.Bson(e...)
 	return d
 }
 

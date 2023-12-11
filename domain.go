@@ -70,6 +70,9 @@ type updating interface {
 	// for pattern matching strings in queries.
 	Regex(key string, regex string, opt ...option.Regex) updating
 
+	// Bson uses the bson.E structure for matching documents.
+	Bson(filter ...bson.E) updating
+
 	// First selects the first document.
 	First() updating
 
@@ -151,6 +154,9 @@ type querying interface {
 	// for pattern matching strings in queries.
 	Regex(key string, regex string, opt ...option.Regex) querying
 
+	// Bson uses the bson.E structure for matching documents.
+	Bson(filter ...bson.E) querying
+
 	// Count counts documents and return the result.
 	Count(ctx context.Context, index ...string) (int64, error)
 
@@ -213,6 +219,9 @@ type finding interface {
 	// Regex provides regular expression capabilities
 	// for pattern matching strings in queries.
 	Regex(key string, regex string, opt ...option.Regex) finding
+
+	// Bson uses the bson.E structure for matching documents.
+	Bson(filter ...bson.E) finding
 
 	// First selects the first document.
 	First() finding
@@ -288,6 +297,9 @@ type deleting interface {
 	// Regex provides regular expression capabilities
 	// for pattern matching strings in queries.
 	Regex(key string, regex string, opt ...option.Regex) deleting
+
+	// Bson uses the bson.E structure for matching documents.
+	Bson(filter ...bson.E) deleting
 
 	// First selects the first document.
 	First() deleting

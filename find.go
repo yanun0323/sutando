@@ -90,6 +90,11 @@ func (f *find) First() finding {
 	return f
 }
 
+func (f *find) Bson(e ...bson.E) finding {
+	f.q.Bson(e...)
+	return f
+}
+
 func (f *find) Sort(value map[string]bool) finding {
 	s := make([]bson.E, 0, len(value))
 	for k, v := range value {

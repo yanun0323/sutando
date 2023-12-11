@@ -97,6 +97,11 @@ func (u *update) Regex(key string, regex string, opt ...option.Regex) updating {
 	return u
 }
 
+func (u *update) Bson(e ...bson.E) updating {
+	u.q.Bson(e...)
+	return u
+}
+
 func (u *update) First() updating {
 	u.q.first()
 	return u
@@ -106,6 +111,7 @@ func (u *update) Set(key string, value any) updating {
 	u.set[key] = value
 	return u
 }
+
 func (u *update) Exec(ctx context.Context, upsert bool) (updateResult, error) {
 	if u.q.isOne() {
 		return u.q.col().UpdateOne(ctx, u.q.build(), u.buildObjects(), &options.UpdateOptions{Upsert: &upsert})
