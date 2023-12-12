@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/yanun0323/sutando/option"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type querySuite struct {
@@ -267,5 +269,20 @@ func (su *querySuite) TestQueryGood() {
 	su.Empty(a)
 
 	su.NoError(su.invokeQuery(col.query().NotIn("arrTest", []int{1, 2, 3}), &a))
+	su.Empty(a)
+
+	// Regex
+
+	su.NoError(su.invokeQuery(col.query().Regex("structName", "^yan.*", option.MatchMultiLine), &a))
+	su.Empty(a)
+
+	su.NoError(su.invokeQuery(col.query().Regex("structName", "^yan.*", option.CaseInsensitive|option.MatchMultiLine), &a))
+	su.Equal(3, len(a))
+
+	// Bson
+	su.NoError(su.invokeQuery(col.query().Bson(bson.E{Key: "structName", Value: bson.M{"$eq": "Yanun"}}), &a))
+	su.Equal(3, len(a))
+
+	su.NoError(su.invokeQuery(col.query().Bson(bson.E{Key: "mapTest.1", Value: bson.M{"$ne": 2}}), &a))
 	su.Empty(a)
 }
