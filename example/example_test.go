@@ -2,12 +2,14 @@ package example
 
 import (
 	"context"
+	"fmt"
 	"math/rand"
 	"strconv"
 	"testing"
 	"time"
 
-	"github.com/pkg/errors"
+	"errors"
+
 	"github.com/shopspring/decimal"
 	"github.com/yanun0323/sutando"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -61,7 +63,7 @@ func testInstant(db sutando.DB, collection string) error {
 	{ // Insert
 		result, _, err := col.Insert(_school).Exec(ctx)
 		if err != nil {
-			return errors.Errorf("%+v", err)
+			return fmt.Errorf("%w", err)
 		}
 		if result.InsertedID == nil {
 			return errors.New("empty inserted ID")
@@ -71,10 +73,10 @@ func testInstant(db sutando.DB, collection string) error {
 	{ // Count
 		c, err := col.Scalar().Count(ctx)
 		if err != nil {
-			return errors.Errorf("%+v", err)
+			return fmt.Errorf("%w", err)
 		}
 		if c == 0 {
-			errors.New("no data in database")
+			return errors.New("no data in database")
 		}
 	}
 
@@ -82,7 +84,7 @@ func testInstant(db sutando.DB, collection string) error {
 		var result School
 		err := col.Find().Equal("name", "sutando").Exists("room.901", true).First().Exec(ctx, &result)
 		if err != nil {
-			return errors.Errorf("%+v", err)
+			return fmt.Errorf("%w", err)
 		}
 	}
 
@@ -90,7 +92,7 @@ func testInstant(db sutando.DB, collection string) error {
 		_school.BuildedTime = time.Now()
 		result, err := col.UpdateWith(&_school).Equal("name", "sutando").Exec(ctx, false)
 		if err != nil {
-			return errors.Errorf("%+v", err)
+			return fmt.Errorf("%w", err)
 		}
 
 		if result.MatchedCount == 0 {
@@ -100,14 +102,14 @@ func testInstant(db sutando.DB, collection string) error {
 		var found School
 		err = col.Find().Equal("name", "sutando").First().Exec(ctx, &found)
 		if err != nil && !errors.Is(sutando.ErrNoDocument, err) {
-			return errors.Errorf("%+v", err)
+			return fmt.Errorf("%w", err)
 		}
 	}
 
 	{ // Delete
 		result, err := col.Delete().Contain("room").Exec(ctx)
 		if err != nil {
-			return errors.Errorf("%+v", err)
+			return fmt.Errorf("%w", err)
 		}
 		if result.DeletedCount != 1 {
 			return errors.New("deleted nothing")

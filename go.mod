@@ -3,7 +3,6 @@ module github.com/yanun0323/sutando
 go 1.21
 
 require (
-	github.com/pkg/errors v0.9.1
 	github.com/shopspring/decimal v1.3.1
 	github.com/stretchr/testify v1.8.4
 	go.mongodb.org/mongo-driver v1.13.1

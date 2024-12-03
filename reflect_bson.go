@@ -69,7 +69,7 @@ func (e bsonEncoder) encode(p any, key string) any {
 		for i := 0; i < elem.NumField(); i++ {
 			field := elem.Type().Field(i)
 
-			label, skip, omitempty := getTag(elem, field)
+			label, skip, omitempty := getTag(field)
 			if skip {
 				continue
 			}

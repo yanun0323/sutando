@@ -2,9 +2,10 @@ package sutando
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"reflect"
 
-	"github.com/pkg/errors"
 	"github.com/yanun0323/sutando/option"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -136,7 +137,7 @@ func (f *find) Exec(ctx context.Context, p any) error {
 	}
 
 	if !f.q.isOne() {
-		return f.execFindMany(ctx, f, p)
+		return f.execFindMany(ctx, p)
 	}
 
 	obj := reflect.New(reflect.TypeOf(p).Elem().Elem())
@@ -157,22 +158,22 @@ func (f *find) execFindOne(ctx context.Context, p any) error {
 
 	err := result.Decode(p)
 	if err != nil {
-		return errors.Errorf("mongo: decode document error: %+v", err)
+		return fmt.Errorf("mongo: decode document error: %w", err)
 	}
 
 	return nil
 }
 
-func (f *find) execFindMany(ctx context.Context, q finding, p any) error {
+func (f *find) execFindMany(ctx context.Context, p any) error {
 	cursor, err := f.q.col().Find(ctx, f.q.build(), f.optMany)
 	if err != nil {
-		return errors.Errorf("mongo: invoke finding error: %+v", err)
+		return fmt.Errorf("mongo: invoke finding error: %w", err)
 	}
 	defer cursor.Close(ctx)
 
 	err = cursor.All(ctx, p)
 	if err != nil {
-		return errors.Errorf("mongo: decode using cursor error: %+v", err)
+		return fmt.Errorf("mongo: decode using cursor error: %w", err)
 	}
 	return nil
 }
